@@ -3,7 +3,6 @@ using Ori.AudioAnalyzer.Core;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
-using AudioAnalyzer = Ori.AudioAnalyzer.Core;
 
 namespace Ori.AudioAnalyzer.Editor
 {
@@ -16,6 +15,7 @@ namespace Ori.AudioAnalyzer.Editor
         private const string NO_AUDIO_TEXT = "No Audio File";
 
         private Orchestrator m_Orchestrator;
+        private WaveformView m_WaveformView;
 
         private VisualTreeAsset m_VisualTree;
         private StyleSheet m_StyleSheet;
@@ -23,6 +23,7 @@ namespace Ori.AudioAnalyzer.Editor
         private VisualElement m_LoadAudioSection;
         private VisualElement m_AudioLoadedSection;
         private VisualElement m_AudioAnalyzedSection;
+        private VisualElement m_WaveformViewSection;
         private Label m_HeaderLabel;
         private Label m_PathLabel;
         private Button m_LoadAudioButton;
@@ -59,6 +60,7 @@ namespace Ori.AudioAnalyzer.Editor
             if (m_VisualTree == null || m_StyleSheet == null) return;
 
             QueryWindowElements();
+            CreateWaveformView();
             AddListeners();
             CreateOrchestrator();
             UpdateAudioPath(m_AudioPath);
@@ -72,6 +74,7 @@ namespace Ori.AudioAnalyzer.Editor
             m_LoadAudioSection = rootVisualElement.Q<VisualElement>("LoadAudioSection");
             m_AudioLoadedSection = rootVisualElement.Q<VisualElement>("AudioLoadedSection");
             m_AudioAnalyzedSection = rootVisualElement.Q<VisualElement>("AudioAnalyzedSection");
+            m_WaveformViewSection = rootVisualElement.Q<VisualElement>("WaveformViewSection");
             
             m_HeaderLabel = rootVisualElement.Q<Label>("HeaderLabel");
             m_PathLabel = rootVisualElement.Q<Label>("FilePathLabel");
@@ -80,6 +83,20 @@ namespace Ori.AudioAnalyzer.Editor
             m_RemoveAudioButton = rootVisualElement.Q<Button>("RemoveAudioButton");
             m_AnalyzeAudioButton = rootVisualElement.Q<Button>("AnalyzeButton");
             m_CreateFluxButton = rootVisualElement.Q<Button>("CreateFluxButton");
+        }
+        
+        private void CreateWaveformView()
+        {
+            m_WaveformView = new WaveformView();
+            
+            // 1. Tell it to take up all available space in the container
+            m_WaveformView.style.flexGrow = 1;
+    
+            // 2. Or, explicitly match the parent's height
+            m_WaveformView.style.height = Length.Percent(100);
+            m_WaveformView.style.width = Length.Percent(100);
+            
+            m_WaveformViewSection.Add(m_WaveformView);
         }
         
         private void AddListeners()
@@ -140,9 +157,10 @@ namespace Ori.AudioAnalyzer.Editor
             {
                 UpdateAudioPath(audioPath);
                 
-                m_Orchestrator.ParseAudio(audioPath);
+                Signal signal = m_Orchestrator.ParseAudio(audioPath);
                 
-                DrawWaveform();
+                DrawWaveform(signal);
+                
                 ChangeState(AudioAnalyzerWindowState.AUDIO_LOADED);
             }
             catch (Exception e)
@@ -152,9 +170,9 @@ namespace Ori.AudioAnalyzer.Editor
             }
         }
 
-        private void DrawWaveform()
+        private void DrawWaveform(Signal signal)
         {
-            //todo: draw wave form logic here
+            m_WaveformView.SetSignal(signal);
         }
 
         private VisualTreeAsset LoadXML(string path)

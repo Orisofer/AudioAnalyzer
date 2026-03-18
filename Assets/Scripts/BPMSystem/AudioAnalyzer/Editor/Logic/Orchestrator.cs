@@ -17,7 +17,7 @@ namespace Ori.AudioAnalyzer.Core
             m_AudioAnalyzer = new AudioAnalyzer();
         }
 
-        internal Signal ParseAudio(string audioPath = null)
+        internal Signal ParseAudio(string audioPath = null, bool normalized = true)
         {
             if (string.IsNullOrEmpty(audioPath))
             {
@@ -36,6 +36,11 @@ namespace Ori.AudioAnalyzer.Core
                 UpdateAudioPath(audioPath);
                 
                 m_Signal = m_AudioAnalyzer.ParseAudio(audioPath);
+            }
+
+            if (normalized)
+            {
+                NormalizeSignal(m_Signal);
             }
             
             return m_Signal;
@@ -56,6 +61,11 @@ namespace Ori.AudioAnalyzer.Core
             }
             
             return m_Spectrogram;
+        }
+        
+        internal void NormalizeSignal(Signal signal)
+        {
+            m_AudioAnalyzer.NormalizeSignal(signal);
         }
         
         internal void UpdateAudioPath(string audioPath)

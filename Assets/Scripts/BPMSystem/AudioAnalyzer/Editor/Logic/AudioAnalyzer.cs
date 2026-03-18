@@ -29,7 +29,7 @@ namespace Ori.AudioAnalyzer.Core
         public Spectrogram Analyze(Signal signal)
         {
             // normalize signal
-            signal = NormalizeSignal(signal);
+            NormalizeSignal(signal);
 
             // create signal frames
             Frame[] frames = CreateSignalFrames(signal);
@@ -54,6 +54,33 @@ namespace Ori.AudioAnalyzer.Core
             PrintStrongestFrequencyInSpectra(spectrogram);
             
             return spectrogram;
+        }
+        
+        public Signal NormalizeSignal(Signal signal)
+        {
+            float dc = 0f;
+            float maxAmplitude = 0f;
+
+            for (int i = 0; i < signal.Samples.Length; i++)
+            {
+                dc += signal[i];
+                maxAmplitude = Math.Max(maxAmplitude, Math.Abs(signal[i]));
+            }
+
+            if (maxAmplitude == 0)
+            {
+                throw new Exception("Audio Analyzer: Signal of zero amplitude, nothing to analyze.");
+            }
+            
+            float avgDc = dc / signal.Samples.Length;
+            
+            for (int i = 0; i < signal.Samples.Length; i++)
+            {
+                signal[i] -= avgDc;
+                signal[i] /= maxAmplitude;
+            }
+
+            return signal;
         }
 
         private Frame[] CreateSignalFrames(Signal signal)
@@ -81,33 +108,6 @@ namespace Ori.AudioAnalyzer.Core
             }
             
             return frames;
-        }
-
-        private Signal NormalizeSignal(Signal signal)
-        {
-            float dc = 0f;
-            float maxAmplitude = 0f;
-
-            for (int i = 0; i < signal.Samples.Length; i++)
-            {
-                dc += signal[i];
-                maxAmplitude = Math.Max(maxAmplitude, Math.Abs(signal[i]));
-            }
-
-            if (maxAmplitude == 0)
-            {
-                throw new Exception("Audio Analyzer: Signal of zero amplitude, nothing to analyze.");
-            }
-            
-            float avgDc = dc / signal.Samples.Length;
-            
-            for (int i = 0; i < signal.Samples.Length; i++)
-            {
-                signal[i] -= avgDc;
-                signal[i] /= maxAmplitude;
-            }
-
-            return signal;
         }
 
         private IAudioDecoder GetDecoder(string audioExtension, byte[] audioBytes)

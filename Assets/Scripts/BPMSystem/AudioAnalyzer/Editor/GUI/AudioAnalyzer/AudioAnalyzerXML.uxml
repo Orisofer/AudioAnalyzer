@@ -16,6 +16,10 @@
         
         <ui:VisualElement name="AudioLoadedSection" class="section section-audio-loaded">
             
+            <ui:VisualElement name="WaveformViewSection" class="audio-loaded-buttons-container">
+                
+            </ui:VisualElement>
+            
             <ui:Label name="FilePathLabel" text="No file selected" class="path-label" />
             
             <ui:VisualElement class="audio-loaded-buttons-container">

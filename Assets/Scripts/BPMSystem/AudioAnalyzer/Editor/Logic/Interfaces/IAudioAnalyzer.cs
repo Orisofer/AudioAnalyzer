@@ -5,6 +5,8 @@ namespace Ori.AudioAnalyzer.Core
         public Signal ParseAudio(string audioPath);
         
         public Spectrogram Analyze(Signal signal);
+
+        public Signal NormalizeSignal(Signal signal);
     }
 }
 
