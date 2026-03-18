@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ui:UXML xmlns:ui="UnityEngine.UIElements">
+    
+    <ui:VisualElement class="root">
+        
+        <ui:VisualElement name="HeaderSection" class="header-section">
+            <ui:Label name="HeaderLabel" text="Audio Analyzer" class="section section-header" />
+        </ui:VisualElement>
+        
+        <ui:VisualElement name="LoadAudioSection" class="section section-load-audio">
+            
+            <ui:Button name="LoadAudioButton" class="button button-load-audio" text="Load Audio File" />
+            
+        </ui:VisualElement>
+        
+        <ui:VisualElement name="AudioLoadedSection" class="section section-audio-loaded">
+            
+            <ui:Label name="FilePathLabel" text="No file selected" class="path-label" />
+            
+            <ui:VisualElement class="audio-loaded-buttons-container">
+                <ui:Button name="AnalyzeButton" class="button button-analyze" text="Analyze Audio" />
+                <ui:Button name="RemoveAudioButton" class="button button-remove-audio" text="Remove Audio" />
+            </ui:VisualElement>
+            
+        </ui:VisualElement>
+        
+        <ui:VisualElement name="AudioAnalyzedSection" class="section section-analyze-audio">
+            
+            <ui:VisualElement class="audio-analyzed-buttons-container">
+                <ui:Button name="CreateFluxButton" class="button button-create-flux" text="Create Flux" />
+            </ui:VisualElement>
+            
+        </ui:VisualElement>
+        
+    </ui:VisualElement>
+    
+</ui:UXML>
