@@ -89,19 +89,6 @@ namespace Ori.AudioAnalyzer.Editor
             m_AnalyzeAudioButton.clicked += OnAnalyzeAudioClicked;
             m_CreateFluxButton.clicked += OnCreateFluxButtonClicked;
         }
-
-        private void UpdateAudioPath(string path)
-        {
-            if (!string.IsNullOrEmpty(path))
-            {
-                m_Orchestrator.UpdateAudioPath(path);
-                m_PathLabel.text = path;
-            }
-            else
-            {
-                m_PathLabel.text = NO_AUDIO_TEXT;
-            }
-        }
         
         private void CreateOrchestrator()
         {
@@ -148,18 +135,26 @@ namespace Ori.AudioAnalyzer.Editor
             {
                 return;
             }
-            
-            m_AudioPath = audioPath;
-            
-            UpdateAudioPath(audioPath);
-            DrawWaveform();
-            
-            ChangeState(AudioAnalyzerWindowState.AUDIO_LOADED);
+
+            try
+            {
+                UpdateAudioPath(audioPath);
+                
+                m_Orchestrator.ParseAudio(audioPath);
+                
+                DrawWaveform();
+                ChangeState(AudioAnalyzerWindowState.AUDIO_LOADED);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                ChangeState(AudioAnalyzerWindowState.NO_AUDIO_LOADED);
+            }
         }
 
         private void DrawWaveform()
         {
-            
+            //todo: draw wave form logic here
         }
 
         private VisualTreeAsset LoadXML(string path)
@@ -239,6 +234,21 @@ namespace Ori.AudioAnalyzer.Editor
             m_RemoveAudioButton.clicked -= OnRemoveAudioClicked;
             m_AnalyzeAudioButton.clicked -= OnAnalyzeAudioClicked;
         }
+        
+        private void UpdateAudioPath(string path)
+        {
+            if (!string.IsNullOrEmpty(path))
+            {
+                m_AudioPath = path;
+                m_Orchestrator.UpdateAudioPath(path);
+                m_PathLabel.text = path;
+            }
+            else
+            {
+                m_PathLabel.text = NO_AUDIO_TEXT;
+            }
+        }
+
 
         private void OnDisable()
         {

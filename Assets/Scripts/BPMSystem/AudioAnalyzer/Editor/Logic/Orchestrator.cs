@@ -17,15 +17,27 @@ namespace Ori.AudioAnalyzer.Core
             m_AudioAnalyzer = new AudioAnalyzer();
         }
 
-        internal Signal ParseAudio(string audioPath)
+        internal Signal ParseAudio(string audioPath = null)
         {
-            if (string.IsNullOrEmpty(m_AudioPath))
+            if (string.IsNullOrEmpty(audioPath))
             {
-                Debug.Log("Orchestrator: No audio path provided");
-                return null;
+                if (m_AudioPath != null)
+                {
+                    m_Signal = m_AudioAnalyzer.ParseAudio(m_AudioPath);
+                }
+                else
+                {
+                    Debug.Log("Orchestrator: No audio path provided");
+                    return null;
+                }
+            }
+            else
+            {
+                UpdateAudioPath(audioPath);
+                
+                m_Signal = m_AudioAnalyzer.ParseAudio(audioPath);
             }
             
-            m_Signal = m_AudioAnalyzer.ParseAudio(audioPath);
             return m_Signal;
         }
 
