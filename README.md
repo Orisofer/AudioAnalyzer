@@ -1,6 +1,6 @@
-# Ori.AudioAnalyzer
+# AudioAnalyzer
 
-A robust audio analysis framework for Unity designed to bridge the gap between raw audio data and visualizable spectrograms. This tool provides a streamlined workflow for parsing signals and extracting frequency data for use in gameplay, UI, or music visualization.
+An audio analysis framework for Unity designed to bridge the gap between raw audio data and visualizable spectrograms. This tool provides a streamlined workflow for parsing signals and extracting frequency data for use in gameplay, UI, or music visualization.
 
 ## Project Structure
 
