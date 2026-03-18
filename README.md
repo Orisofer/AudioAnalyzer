@@ -39,7 +39,6 @@ Since the `Orchestrator` is currently marked as `internal`, it is intended to be
 var orchestrator = new Orchestrator();
 
 // 2. Set the path and parse the file
-orchestrator.UpdateAudioPath("Assets/Audio/MyTrack.wav");
 Signal mySignal = orchestrator.ParseAudio("Assets/Audio/MyTrack.wav");
 
 // 3. Generate the Spectrogram
