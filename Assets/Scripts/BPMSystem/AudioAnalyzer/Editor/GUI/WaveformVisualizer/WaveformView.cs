@@ -6,7 +6,7 @@ namespace Ori.AudioAnalyzer.Editor
 {
     internal class WaveformView : VisualElement
     {
-        private readonly Color m_WaveformColor = new Color(0.8f, 0.8f, 0.8f);
+        private readonly Color m_WaveformColor = new Color(0.12f, 0.12f, 0.12f);
         private LevelPoint[] m_PrecomputedLevels;
         private Signal m_Signal;
 
