@@ -62,3 +62,5 @@ ExportedObj/
 # Blender
 *.blend1
 *.blend1.meta
+
+/Prompts/
