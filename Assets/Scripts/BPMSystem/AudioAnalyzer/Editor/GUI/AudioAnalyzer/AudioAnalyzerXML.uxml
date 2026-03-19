@@ -16,7 +16,7 @@
         
         <ui:VisualElement name="AudioLoadedSection" class="section section-audio-loaded">
             
-            <ui:VisualElement name="WaveformViewSection" class="audio-loaded-buttons-container">
+            <ui:VisualElement name="WaveformViewSection" class="waveform-container">
                 
             </ui:VisualElement>
             

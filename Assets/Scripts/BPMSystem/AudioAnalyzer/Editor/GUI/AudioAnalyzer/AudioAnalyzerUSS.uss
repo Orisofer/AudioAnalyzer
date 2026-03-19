@@ -19,8 +19,14 @@
 .audio-loaded-buttons-container
 {
     flex-grow: 1;
-    height: 200px;
     align-self: stretch;
+}
+
+.waveform-container
+{
+    flex-grow: 1;
+    align-self: stretch;
+    height: 200px;
 }
 
 .button {
