@@ -135,7 +135,7 @@ namespace Ori.AudioAnalyzer.Core
             {
                 Spectrum s = spectrogram.Spectra[i];
                 
-                Debug.Log($"strongest freq in spectrum {i} is: {s.StrongestFrequency()}");
+                Debug.Log($"strongest freq in spectrum {i} is: {s.CalculateStrongestFrequency()}");
             }
         }
     }

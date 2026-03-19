@@ -5,8 +5,11 @@ namespace Ori.AudioAnalyzer.Core
         private readonly float[] m_Bins;
         private readonly float m_SampleRate;
         private readonly int m_StartingSample;
+
+        private float m_StrongestFrequency;
         
         public int StartingSample => m_StartingSample;
+        public float StrongestFrequency => m_StrongestFrequency;
 
         public Spectrum(float[] bins, int startingSample, float sampleRate)
         {
@@ -21,7 +24,7 @@ namespace Ori.AudioAnalyzer.Core
             set => m_Bins[index] = value;
         }
 
-        public float StrongestFrequency()
+        public float CalculateStrongestFrequency()
         {
             int strongestIndex = 0;
             float strongestMagnitude = 0f;
@@ -40,9 +43,9 @@ namespace Ori.AudioAnalyzer.Core
             
             // Convert bin index -> Hz
             int fftSize = m_Bins.Length * 2;
-            float detectedFrequency = (strongestIndex * m_SampleRate) / fftSize;
+            m_StrongestFrequency = (strongestIndex * m_SampleRate) / fftSize;
             
-            return detectedFrequency;
+            return m_StrongestFrequency;
         }
     }
 }

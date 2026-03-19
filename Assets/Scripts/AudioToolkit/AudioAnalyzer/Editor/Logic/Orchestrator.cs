@@ -6,6 +6,7 @@ namespace Ori.AudioAnalyzer.Core
     internal class Orchestrator
     {
         private readonly IAudioAnalyzer m_AudioAnalyzer;
+        private readonly IFluxCreator m_FluxCreator;
         
         private Spectrogram m_Spectrogram;
         private Signal m_Signal;
@@ -15,6 +16,7 @@ namespace Ori.AudioAnalyzer.Core
         internal Orchestrator()
         {
             m_AudioAnalyzer = new AudioAnalyzer();
+            m_FluxCreator = new MultibandFluxCreator();
         }
 
         internal Signal ParseAudio(string audioPath = null, bool normalized = true)
@@ -63,7 +65,7 @@ namespace Ori.AudioAnalyzer.Core
             return m_Spectrogram;
         }
         
-        internal void NormalizeSignal(Signal signal)
+        private void NormalizeSignal(Signal signal)
         {
             m_AudioAnalyzer.NormalizeSignal(signal);
         }

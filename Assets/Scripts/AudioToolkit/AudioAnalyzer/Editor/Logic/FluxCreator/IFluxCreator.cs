@@ -1,6 +1,8 @@
+using UnityEngine;
+
 namespace Ori.AudioAnalyzer.Core
 {
-    public interface IAudioProcessor
+    public interface IFluxCreator
     {
     
     }
