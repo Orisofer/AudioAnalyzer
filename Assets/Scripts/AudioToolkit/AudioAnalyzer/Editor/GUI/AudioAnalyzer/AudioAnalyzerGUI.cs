@@ -114,7 +114,15 @@ namespace Ori.AudioAnalyzer.Editor
         
         private void OnCreateFluxButtonClicked()
         {
-            Debug.Log("CreateFluxButtonClicked");
+            try
+            {
+                m_Orchestrator.CreateFlux();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
 
         private void OnAnalyzeAudioClicked()

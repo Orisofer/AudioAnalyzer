@@ -8,6 +8,7 @@ namespace Ori.AudioAnalyzer.Core
         private readonly int m_HopSize;
         
         public Spectrum[] Spectra => m_Spectra;
+        public float SampleRate => m_SampleRate;
         
         public Spectrogram(float sampleRate, int fftSize, int hopSize, Spectrum[] spectra)
         {

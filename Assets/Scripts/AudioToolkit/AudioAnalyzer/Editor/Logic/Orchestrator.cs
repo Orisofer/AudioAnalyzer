@@ -10,7 +10,6 @@ namespace Ori.AudioAnalyzer.Core
         
         private Spectrogram m_Spectrogram;
         private Signal m_Signal;
-        
         private string m_AudioPath;
         
         internal Orchestrator()
@@ -63,6 +62,21 @@ namespace Ori.AudioAnalyzer.Core
             }
             
             return m_Spectrogram;
+        }
+
+        internal void CreateFlux(Spectrogram spectrogram = null)
+        {
+            if (spectrogram == null)
+            {
+                if (m_Spectrogram != null)
+                {
+                    m_FluxCreator.CreateFlux(m_Spectrogram);
+                }
+            }
+            else
+            {
+                m_FluxCreator.CreateFlux(spectrogram);
+            }
         }
         
         private void NormalizeSignal(Signal signal)
