@@ -154,7 +154,7 @@ namespace Ori.AudioAnalyzer.Editor
 
         private void OnLoadAudioFilePressed()
         {
-            string audioPath = EditorUtility.OpenFilePanelWithFilters("Audio Analyzer", null, AUDIO_EXTENSIONS);
+            string audioPath = EditorUtility.OpenFilePanelWithFilters("Audio Analyzer","/Users/orisofer/Desktop", AUDIO_EXTENSIONS);
 
             if (string.IsNullOrEmpty(audioPath))
             {

@@ -5,9 +5,9 @@ namespace Ori.AudioAnalyzer.Core
     public class MultibandFluxCreator : IFluxCreator
     {
         private const float ENERGY_THRESHOLD = 4.5f;
-        private const float KICK_FREQUENCY_MAX = 110;
+        private const float KICK_FREQUENCY_MAX = 150;
         private const float SNARE_FREQUENCY_MAX = 2000;
-        private const float HIHAT_FREQUENCY_MAX = 13000;
+        private const float HIHAT_FREQUENCY_MAX = 15000;
         
         private int[] m_Kicks;
         private int[] m_Snares;
@@ -41,41 +41,49 @@ namespace Ori.AudioAnalyzer.Core
             {
                 Spectrum prev =  spectrogram.Spectra[i - 1];
                 Spectrum curr = spectrogram.Spectra[i];
+                
                 int binIndexPointer = 0;
-
-                // evaluate kick region
-                while (binIndexPointer < kickBinsEndIndex)
-                {
-                    SetOnset(prev, curr, ref m_Kicks, binIndexPointer, i);
-                    binIndexPointer++;
-                }
                 
                 // evaluate kick region
-                while (binIndexPointer < snareBinsEndIndex)
-                {
-                    SetOnset(prev, curr, ref m_Snares, binIndexPointer, i);
-                    binIndexPointer++;
-                }
+                EvaluateRegion(ref m_Kicks,  kickBinsEndIndex, prev, curr, ref binIndexPointer, i);
                 
-                // evaluate kick region
-                while (binIndexPointer < hihatBinsEndIndex)
-                {
-                    SetOnset(prev, curr, ref m_HiHats, binIndexPointer, i);
-                    binIndexPointer++;
-                }
+                // evaluate snare region
+                EvaluateRegion(ref m_Snares,  snareBinsEndIndex, prev, curr, ref binIndexPointer, i);
+                
+                // evaluate hihat region
+                EvaluateRegion(ref m_HiHats,  hihatBinsEndIndex, prev, curr, ref binIndexPointer, i);
             }
         }
 
-        private void SetOnset(Spectrum prev, Spectrum curr, ref int[] instrument, int binIndex, int timeLineIndex)
+        private void EvaluateRegion(ref int[] instrument, int binsEndIndex, Spectrum prev, Spectrum curr, ref int binIndexPointer, int spectrumIndex)
+        {
+            float regionDeltaSum = 0f;
+            
+            while (binIndexPointer < binsEndIndex)
+            {
+                float delta = BinDelta(prev, curr, binIndexPointer);
+                    
+                regionDeltaSum += delta;
+                    
+                binIndexPointer++;
+            }
+
+            if (regionDeltaSum >= ENERGY_THRESHOLD)
+            {
+                instrument[spectrumIndex] = curr.StartingSample;
+            }
+        }
+
+        private float BinDelta(Spectrum prev, Spectrum curr, int binIndex)
         {
             float delta = curr[binIndex] - prev[binIndex];
 
-            if (delta < 0) return;
-
-            if (delta > ENERGY_THRESHOLD)
+            if (delta < 0)
             {
-                instrument[timeLineIndex] = curr.StartingSample;
+                return 0f;
             }
+
+            return delta;
         }
 
         private int GetBinIndex(float frequency, float sampleRate, int fftSize)
