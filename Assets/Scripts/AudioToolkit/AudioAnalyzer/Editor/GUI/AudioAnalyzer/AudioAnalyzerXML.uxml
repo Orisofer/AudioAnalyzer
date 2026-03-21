@@ -4,8 +4,10 @@
     
     <ui:VisualElement class="root">
         
-        <ui:VisualElement name="HeaderSection" class="header-section">
-            <ui:Label name="HeaderLabel" text="Audio Analyzer" class="section section-header" />
+        <ui:VisualElement name="HeaderSection" class="section section-header">
+            
+            <ui:Label name="HeaderLabel" text="Audio Analyzer" class="label label-header" />
+            
         </ui:VisualElement>
         
         <ui:VisualElement name="LoadAudioSection" class="section section-load-audio">
@@ -16,13 +18,13 @@
         
         <ui:VisualElement name="AudioLoadedSection" class="section section-audio-loaded">
             
-            <ui:VisualElement name="WaveformViewSection" class="waveform-container">
+            <ui:VisualElement name="WaveformViewSection" class="section section-waveform-view">
                 
             </ui:VisualElement>
             
-            <ui:Label name="FilePathLabel" text="No file selected" class="path-label" />
+            <ui:Label name="FilePathLabel" text="No file selected" class="label-path" />
             
-            <ui:VisualElement class="audio-loaded-buttons-container">
+            <ui:VisualElement class="container container-audio-loaded-buttons">
                 <ui:Button name="AnalyzeButton" class="button button-analyze" text="Analyze Audio" />
                 <ui:Button name="RemoveAudioButton" class="button button-remove-audio" text="Remove Audio" />
             </ui:VisualElement>
@@ -31,11 +33,11 @@
         
         <ui:VisualElement name="AudioAnalyzedSection" class="section section-analyze-audio">
             
-            <ui:VisualElement class="audio-analyzed-buttons-container">
+            <ui:VisualElement class="container container-audio-analyzed-buttons">
                 <ui:Button name="CreateFluxButton" class="button button-create-flux" text="Create Flux" />
             </ui:VisualElement>
             
-            <ui:VisualElement name="FluxViewSection" class="flux-view-container">
+            <ui:VisualElement name="FluxViewSection" class="section section-flux-view">
                 
             </ui:VisualElement>
             

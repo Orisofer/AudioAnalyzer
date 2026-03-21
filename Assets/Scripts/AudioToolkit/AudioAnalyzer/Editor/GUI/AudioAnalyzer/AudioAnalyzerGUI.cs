@@ -113,7 +113,7 @@ namespace Ori.AudioAnalyzer.Editor
             m_FluxView.style.height = Length.Percent(100);
             m_FluxView.style.width = Length.Percent(100);
             
-            m_FluxViewSection.Add(m_WaveformView);
+            m_FluxViewSection.Add(m_FluxView);
         }
         
         private void AddListeners()

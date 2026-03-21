@@ -5,29 +5,36 @@
     align-items: center;
 }
 
+/* =================== SECTION ======================= */
+
 .section {
     align-items: center;
     width: 92%
 }
 
-.section-header {
-    font-size: 24px;
-    -unity-font-style: bold;
-    margin-bottom: 6px;
-}
-
-.audio-loaded-buttons-container
-{
-    flex-grow: 1;
-    align-self: stretch;
-}
-
-.waveform-container
-{
-    flex-grow: 1;
-    align-self: stretch;
+.section-waveform-view {
     height: 200px;
 }
+
+.section-flux-view {
+    margin-top: 20px;
+    height: 200px;
+    border-radius: 10px;
+    background-color: #050317;
+}
+
+/* ================== CONTAINER ======================= */
+
+.container {
+    flex-grow: 1;
+    align-self: stretch;
+}
+
+.container-waveform {
+    height: 200px;
+}
+
+/* =================== BUTTON ======================= */
 
 .button {
     background-color: #2a72ff;
@@ -38,29 +45,22 @@
     width: 100%;
 }
 
-.analyze-button {
-    background-color: #2a72ff;
-    color: #e1e1e1;
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin-top: 10px;
-    width: 100%;
+.button:hover {
+    background-color: #1f5bd1;
 }
 
-.remove-audio-button {
-    background-color: #2a72ff;
-    color: #e1e1e1;
-    border-radius: 8px;
-    padding: 8px 12px;
-    margin-top: 10px;
-    width: 100%;
+/* ===================== LABEL ======================= */
+
+.label {
+    font-size: 24px;
+    -unity-font-style: bold;
 }
 
-.load-button:hover {
-    background-color: #1f5bd1; /* a darker blue */
+.label-header {
+    margin-bottom: 6px;
 }
 
-.path-label {
+.label-path {
     font-size: 12px;
     color: #999;
     margin-top: 10px;
