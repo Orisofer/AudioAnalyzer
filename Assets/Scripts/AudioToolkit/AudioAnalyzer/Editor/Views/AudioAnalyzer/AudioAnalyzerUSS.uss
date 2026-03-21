@@ -9,7 +9,7 @@
 
 .section {
     align-items: center;
-    width: 92%;
+    width: 100%;
 }
 
 .section-waveform-view {
@@ -20,7 +20,6 @@
     margin-top: 20px;
     min-height: 250px;
     border-radius: 10px;
-    background-color: #171725;
 }
 
 /* ================== CONTAINER ======================= */
@@ -98,8 +97,11 @@
 
 .flux-view-area-control {
     flex-shrink: 0;
-    padding-top: 10px;
+    padding: 10px;
     padding-bottom: 10px;
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    background-color: #1e1e1e;
 }
 
 .container-flux-view-legend {
