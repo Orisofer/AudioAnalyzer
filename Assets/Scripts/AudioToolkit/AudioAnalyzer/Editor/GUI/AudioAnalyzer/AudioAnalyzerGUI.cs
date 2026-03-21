@@ -114,8 +114,9 @@ namespace Ori.AudioAnalyzer.Editor
             m_RemoveAudioButton.clicked += OnRemoveAudioClicked;
             m_AnalyzeAudioButton.clicked += OnAnalyzeAudioClicked;
             m_CreateFluxButton.clicked += OnCreateFluxButtonClicked;
+            m_FluxView.FluxParametersUpdated += OnFluxParametersUpdated;
         }
-        
+
         private void CreateOrchestrator()
         {
             m_Orchestrator = new Orchestrator();
@@ -135,6 +136,11 @@ namespace Ori.AudioAnalyzer.Editor
             {
                 Debug.LogException(e);
             }
+        }
+        
+        private void OnFluxParametersUpdated(FluxCreatorParameters newParameters)
+        {
+            m_Orchestrator.UpdateFluxParameters(newParameters);
         }
 
         private void OnAnalyzeAudioClicked()

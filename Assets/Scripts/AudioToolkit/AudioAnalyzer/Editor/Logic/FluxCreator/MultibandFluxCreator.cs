@@ -9,10 +9,10 @@ namespace Ori.AudioAnalyzer.Core
         private const float KICK_FREQUENCY_MAX = 120;
         private const float SNARE_FREQUENCY_MAX = 2000;
         private const float HIHAT_FREQUENCY_MAX = 15000;
-        private const float THRESHOLD_SENSITIVITY_MULTIPLIER = 1.65f;
-        private const float REGION_AVERAGE_ENERGY_MULTIPLIER = 110f;
-
-        private const int FLUX_TIMELINE_WINDOW_SIZE = 20;
+        
+        private float m_ThresholdSensitivityMultiplier;
+        private float m_RegionAverageEnergyMultiplier;
+        private int m_FluxTimelineWindowSize;
         
         private List<int> m_KicksOnsets;
         private List<int> m_SnaresOnsets;
@@ -31,6 +31,10 @@ namespace Ori.AudioAnalyzer.Core
             m_KicksOnsets = new List<int>();
             m_SnaresOnsets = new List<int>();
             m_HiHatsOnsets = new List<int>();
+
+            m_ThresholdSensitivityMultiplier = 1.65f;
+            m_RegionAverageEnergyMultiplier = 110f;
+            m_FluxTimelineWindowSize = 20;
         }
 
         public List<Flux> CreateFlux(Spectrogram spectrogram)
@@ -83,11 +87,11 @@ namespace Ori.AudioAnalyzer.Core
             
             Spectrum[] spectra = spectrogram.Spectra;
 
-            int halfWindowSize = (int)(FLUX_TIMELINE_WINDOW_SIZE * 0.5f);
+            int halfWindowSize = (int)(m_FluxTimelineWindowSize * 0.5f);
             int positionExcludeSurrounding = 1;
 
             float averageEnergyInRegion = CalculateMedian(m_KicksFlux);
-            float noiseThreshold = averageEnergyInRegion * REGION_AVERAGE_ENERGY_MULTIPLIER;
+            float noiseThreshold = averageEnergyInRegion * m_RegionAverageEnergyMultiplier;
 
             for (int i = 0; i < m_KicksFlux.Length; i++)
             {
@@ -110,7 +114,7 @@ namespace Ori.AudioAnalyzer.Core
                 localAverageThreshold /= (windowElementCount - ((positionExcludeSurrounding * 2) + 1));
                 
                 // add multiplier
-                localAverageThreshold *= THRESHOLD_SENSITIVITY_MULTIPLIER;
+                localAverageThreshold *= m_ThresholdSensitivityMultiplier;
 
                 // if it passes the threshold we validate its not local maxima
                 if (m_KicksFlux[i] > noiseThreshold && m_KicksFlux[i] > localAverageThreshold)
@@ -160,6 +164,13 @@ namespace Ori.AudioAnalyzer.Core
             result.Add(kickFlux);
 
             return result;
+        }
+
+        public void SetParameters(FluxCreatorParameters parameters)
+        {
+            m_ThresholdSensitivityMultiplier =  parameters.ThresholdSensitivityMultiplier;
+            m_RegionAverageEnergyMultiplier = parameters.RegionAverageEnergyMultiplier;
+            m_FluxTimelineWindowSize  = parameters.FluxTimelineWindowSize;
         }
 
         private void EvaluateRegionFlux(ref float[] instrument, int binsEndIndex, Spectrum prev,Spectrum curr,

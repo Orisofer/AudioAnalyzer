@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Ori.AudioAnalyzer.Core;
 using UnityEngine;
@@ -17,6 +18,8 @@ namespace Ori.AudioAnalyzer.Editor
         private readonly Color m_ThresholdColor = Color.red;
         private readonly Color m_OnsetColor = Color.yellow;
         private readonly float m_LineWidth = 1.2f;
+
+        public event Action<FluxCreatorParameters> FluxParametersUpdated;
 
         public FluxView()
         {

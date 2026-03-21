@@ -93,6 +93,11 @@ namespace Ori.AudioAnalyzer.Core
             m_AudioPath = audioPath;
         }
 
+        internal void UpdateFluxParameters(FluxCreatorParameters parameters)
+        {
+            m_FluxCreator.SetParameters(parameters);
+        }
+
         internal void Reset()
         {
             m_Signal = null;
