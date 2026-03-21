@@ -13,8 +13,6 @@ namespace Ori.AudioAnalyzer.Core
         private Signal m_Signal;
         private string m_AudioPath;
         
-        public event Action<Flux> FluxCreated;
-        
         internal Orchestrator()
         {
             m_AudioAnalyzer = new AudioAnalyzer();

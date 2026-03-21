@@ -63,10 +63,10 @@ namespace Ori.AudioAnalyzer.Editor
             if (m_VisualTree == null || m_StyleSheet == null) return;
 
             QueryWindowElements();
+            CreateOrchestrator();
             CreateWaveformView();
             CreateFluxVisualizer();
             AddListeners();
-            CreateOrchestrator();
             UpdateAudioPath(m_AudioPath);
 
             ChangeState(AudioAnalyzerWindowState.NO_AUDIO_LOADED);
@@ -94,12 +94,7 @@ namespace Ori.AudioAnalyzer.Editor
         {
             m_WaveformView = new WaveformView();
             
-            // 1. Tell it to take up all available space in the container
-            m_WaveformView.style.flexGrow = 1;
-    
-            // 2. Or, explicitly match the parent's height
-            m_WaveformView.style.height = Length.Percent(100);
-            m_WaveformView.style.width = Length.Percent(100);
+            m_WaveformView.AddToClassList("waveform");
             
             m_WaveformViewSection.Add(m_WaveformView);
         }
@@ -108,10 +103,7 @@ namespace Ori.AudioAnalyzer.Editor
         {
             m_FluxView = new FluxView();
             
-            m_FluxView.style.flexGrow = 1;
-    
-            m_FluxView.style.height = Length.Percent(100);
-            m_FluxView.style.width = Length.Percent(100);
+            m_FluxView.AddToClassList("flux-graph");
             
             m_FluxViewSection.Add(m_FluxView);
         }
@@ -136,11 +128,12 @@ namespace Ori.AudioAnalyzer.Editor
                 List<Flux> fluxes = m_Orchestrator.CreateFlux();
                 
                 m_FluxView.UpdateData(fluxes);
+                
+                ChangeState(AudioAnalyzerWindowState.FLUX_CREATED);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                throw;
+                Debug.LogException(e);
             }
         }
 
@@ -157,8 +150,7 @@ namespace Ori.AudioAnalyzer.Editor
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
-                throw;
+                Debug.LogException(e);
             }
         }
 
@@ -192,7 +184,7 @@ namespace Ori.AudioAnalyzer.Editor
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Debug.LogException(e);
                 ChangeState(AudioAnalyzerWindowState.NO_AUDIO_LOADED);
             }
         }
@@ -246,6 +238,9 @@ namespace Ori.AudioAnalyzer.Editor
                 case AudioAnalyzerWindowState.AUDIO_ANALYZED:
                     DisplayAudioAnalyzedState();
                     break;
+                case AudioAnalyzerWindowState.FLUX_CREATED:
+                    DisplayFluxCreatedState();
+                    break;
             }
         }
         
@@ -255,6 +250,7 @@ namespace Ori.AudioAnalyzer.Editor
             
             m_AudioLoadedSection.style.display = DisplayStyle.None;
             m_AudioAnalyzedSection.style.display = DisplayStyle.None;
+            m_FluxViewSection.style.display = DisplayStyle.None;
         }
         
         private void DisplayAudioLoadedState()
@@ -263,12 +259,23 @@ namespace Ori.AudioAnalyzer.Editor
             
             m_LoadAudioSection.style.display = DisplayStyle.None;
             m_AudioAnalyzedSection.style.display = DisplayStyle.None;
+            m_FluxViewSection.style.display = DisplayStyle.None;
         }
 
         private void DisplayAudioAnalyzedState()
         {
             m_AudioAnalyzedSection.style.display = DisplayStyle.Flex;
             m_AudioLoadedSection.style.display = DisplayStyle.Flex;
+            
+            m_LoadAudioSection.style.display = DisplayStyle.None;
+            m_FluxViewSection.style.display = DisplayStyle.None;
+        }
+
+        private void DisplayFluxCreatedState()
+        {
+            m_AudioAnalyzedSection.style.display = DisplayStyle.Flex;
+            m_AudioLoadedSection.style.display = DisplayStyle.Flex;
+            m_FluxViewSection.style.display = DisplayStyle.Flex;
             
             m_LoadAudioSection.style.display = DisplayStyle.None;
         }
@@ -278,6 +285,7 @@ namespace Ori.AudioAnalyzer.Editor
             m_LoadAudioButton.clicked -= OnLoadAudioFilePressed;
             m_RemoveAudioButton.clicked -= OnRemoveAudioClicked;
             m_AnalyzeAudioButton.clicked -= OnAnalyzeAudioClicked;
+            m_CreateFluxButton.clicked -= OnCreateFluxButtonClicked;
         }
         
         private void UpdateAudioPath(string path)
