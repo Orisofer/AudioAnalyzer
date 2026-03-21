@@ -18,7 +18,7 @@
 
 .section-flux-view {
     margin-top: 20px;
-    height: 200px;
+    min-height: 250px;
     border-radius: 10px;
     background-color: #171725;
 }
@@ -82,10 +82,53 @@
     height: 100%;
 }
 
-/* ==================== FLUX VIEWER ======================= */
+/* ==================== FLUX VIEW ======================= */
 
-.flux-graph {
+.flux-view {
     flex-grow: 1;
     width: 100%;
     height: 100%;
+}
+
+.flux-view-area-graph {
+    flex-grow: 1;
+    min-height: 150px;
+    background-color: #151515;
+}
+
+.flux-view-area-control {
+    flex-shrink: 0;
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.container-flux-view-legend {
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 10px;
+}
+
+.flux-view-legend-item {
+    flex-direction: row;
+    align-items: center;
+    margin-right: 15px;
+}
+
+.flux-view-legend-item-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 5px;
+    margin-right: 5px;
+}
+
+.flux-view-legend-item-dot-flux-energy {
+    background-color: #b68f12;
+}
+
+.flux-view-legend-item-dot-local-threshold {
+    background-color: #e35890;
+}
+
+.flux-view-legend-item-dot-onsets {
+    background-color: #32b828;
 }
