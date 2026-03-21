@@ -1,23 +1,28 @@
 using System;
 using System.Collections.Generic;
 using Ori.AudioAnalyzer.Core;
-using UnityEditor.UIElements; // Required for SliderInt and Slider
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Ori.AudioAnalyzer.Editor
+namespace Ori.AudioAnalyzer.Editor.View
 {
     public class FluxView : VisualElement
     {
-        private float[] m_FluxData;
-        private List<int> m_Onsets;
-        private float m_MedianEnergy;
-
+        private const string CLASS_NAME_FLUX_ENERGY = "flux-energy";
+        private const string CLASS_NAME_LOCAL_THRESHOLD = "local-threshold";
+        private const string CLASS_NAME_ONSET = "onsets";
+        private const string CLASS_NAME_FLUX_LEGEND_ITEM = "flux-view-legend-item";
+        private const string CLASS_NAME_FLUX_LEGEND_ITEM_DOT = "flux-view-legend-item-dot";
+        
         // Visual Settings
         private readonly Color m_FluxColor = Color.cyan;
         private readonly Color m_ThresholdColor = Color.red;
         private readonly Color m_OnsetColor = Color.yellow;
         private readonly float m_LineWidth = 1.2f;
+        
+        private List<int> m_Onsets;
+        private float[] m_FluxData;
+        private float m_MedianEnergy;
 
         // UI Elements
         private VisualElement m_GraphArea;
@@ -53,11 +58,9 @@ namespace Ori.AudioAnalyzer.Editor
         private void SetupGraphArea()
         {
             m_GraphArea = new VisualElement();
-            m_GraphArea.style.flexGrow = 1; // Take up all available space
-            m_GraphArea.style.minHeight = 150; // Ensure it doesn't collapse
-            m_GraphArea.style.backgroundColor = new Color(0.1f, 0.1f, 0.1f, 1f); // Optional dark background
             
-            // Subscribe to the drawing phase ON THE GRAPH AREA, not the main view
+            m_GraphArea.AddToClassList("flux-view-area-graph");
+            
             m_GraphArea.generateVisualContent += OnGenerateVisualContent;
             
             Add(m_GraphArea);
@@ -66,19 +69,21 @@ namespace Ori.AudioAnalyzer.Editor
         private void SetupControlsArea()
         {
             m_ControlArea = new VisualElement();
-            m_ControlArea.style.flexShrink = 0; // Don't let the controls get squished
-            m_ControlArea.style.paddingTop = 10;
-            m_ControlArea.style.paddingBottom = 10;
+            
+            m_ControlArea.AddToClassList("flux-view-area-control");
 
             // 1. Create Legend
             VisualElement legendContainer = new VisualElement();
-            legendContainer.style.flexDirection = FlexDirection.Row;
-            legendContainer.style.justifyContent = Justify.Center;
-            legendContainer.style.marginBottom = 10;
+            
+            legendContainer.AddToClassList("container-flux-view-legend");
 
-            legendContainer.Add(CreateLegendItem(m_FluxColor, "Flux Energy"));
-            legendContainer.Add(CreateLegendItem(m_ThresholdColor, "Local Threshold"));
-            legendContainer.Add(CreateLegendItem(m_OnsetColor, "Detected Onsets"));
+            VisualElement legendElementEnergy = CreateLegendItem("Flux Energy", CLASS_NAME_FLUX_ENERGY);
+            VisualElement legendElementLocalThreshold = CreateLegendItem("Local Threshold", CLASS_NAME_LOCAL_THRESHOLD);
+            VisualElement legendElementDetectedOnsets = CreateLegendItem("Detected Onsets", CLASS_NAME_ONSET);
+
+            legendContainer.Add(legendElementEnergy);
+            legendContainer.Add(legendElementLocalThreshold);
+            legendContainer.Add(legendElementDetectedOnsets);
 
             // 2. Create Sliders
             Slider sensitivitySlider = new Slider("Sensitivity Mult.", 0.1f, 5.0f) { value = m_CurrentParameters.ThresholdSensitivityMultiplier };
@@ -112,22 +117,16 @@ namespace Ori.AudioAnalyzer.Editor
             Add(m_ControlArea);
         }
 
-        private VisualElement CreateLegendItem(Color color, string text)
+        private VisualElement CreateLegendItem(string text, string itemId)
         {
             VisualElement container = new VisualElement();
-            container.style.flexDirection = FlexDirection.Row;
-            container.style.alignItems = Align.Center;
-            container.style.marginRight = 15;
+            
+            container.AddToClassList(CLASS_NAME_FLUX_LEGEND_ITEM);
 
             VisualElement dot = new VisualElement();
-            dot.style.width = 10;
-            dot.style.height = 10;
-            dot.style.backgroundColor = color;
-            dot.style.borderTopLeftRadius = 5;
-            dot.style.borderTopRightRadius = 5;
-            dot.style.borderBottomLeftRadius = 5;
-            dot.style.borderBottomRightRadius = 5;
-            dot.style.marginRight = 5;
+            
+            dot.AddToClassList(CLASS_NAME_FLUX_LEGEND_ITEM_DOT);
+            dot.AddToClassList($"{CLASS_NAME_FLUX_LEGEND_ITEM_DOT}-{itemId}");
 
             Label label = new Label(text);
 

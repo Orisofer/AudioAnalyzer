@@ -5,9 +5,9 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Ori.AudioAnalyzer.Editor
+namespace Ori.AudioAnalyzer.Editor.View
 {
-    public class AudioAnalyzerGUI : EditorWindow
+    public class AudioAnalyzerView : EditorWindow
     {
         private readonly string[] AUDIO_EXTENSIONS = { "Audio-Files", "mp3,ogg,wav" };
         
@@ -41,7 +41,7 @@ namespace Ori.AudioAnalyzer.Editor
         [MenuItem("Tools/AudioAnalyzer/AudioAnalyzerWindow")]
         public static void ShowWindow()
         {
-            var window = GetWindow<AudioAnalyzerGUI>();
+            var window = GetWindow<AudioAnalyzerView>();
             window.titleContent = new GUIContent("Audio Analyzer");
         }
 
@@ -103,7 +103,7 @@ namespace Ori.AudioAnalyzer.Editor
         {
             m_FluxView = new FluxView();
             
-            m_FluxView.AddToClassList("flux-graph");
+            m_FluxView.AddToClassList("flux-view");
             
             m_FluxViewSection.Add(m_FluxView);
         }

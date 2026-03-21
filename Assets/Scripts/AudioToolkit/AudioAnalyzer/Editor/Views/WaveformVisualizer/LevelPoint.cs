@@ -1,6 +1,4 @@
-using UnityEngine;
-
-namespace Ori.AudioAnalyzer.Editor
+namespace Ori.AudioAnalyzer.Editor.View
 {
     internal struct LevelPoint
     {

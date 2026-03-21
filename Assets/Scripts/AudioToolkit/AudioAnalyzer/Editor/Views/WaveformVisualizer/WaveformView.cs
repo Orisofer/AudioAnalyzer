@@ -2,7 +2,7 @@ using Ori.AudioAnalyzer.Core;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Ori.AudioAnalyzer.Editor
+namespace Ori.AudioAnalyzer.Editor.View
 {
     internal class WaveformView : VisualElement
     {
