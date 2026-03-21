@@ -16,7 +16,7 @@ namespace Ori.AudioAnalyzer.Editor
         private readonly Color m_FluxColor = Color.cyan;
         private readonly Color m_ThresholdColor = Color.red;
         private readonly Color m_OnsetColor = Color.yellow;
-        private readonly float m_LineWidth = 1.5f;
+        private readonly float m_LineWidth = 1.2f;
 
         public FluxView()
         {
