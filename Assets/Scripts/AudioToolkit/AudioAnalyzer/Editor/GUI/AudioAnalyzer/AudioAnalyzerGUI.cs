@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using Ori.AudioAnalyzer.Core;
 using UnityEditor;
 using UnityEngine;
@@ -16,6 +17,7 @@ namespace Ori.AudioAnalyzer.Editor
 
         private Orchestrator m_Orchestrator;
         private WaveformView m_WaveformView;
+        private FluxView m_FluxView;
 
         private VisualTreeAsset m_VisualTree;
         private StyleSheet m_StyleSheet;
@@ -24,6 +26,7 @@ namespace Ori.AudioAnalyzer.Editor
         private VisualElement m_AudioLoadedSection;
         private VisualElement m_AudioAnalyzedSection;
         private VisualElement m_WaveformViewSection;
+        private VisualElement m_FluxViewSection;
         private Label m_HeaderLabel;
         private Label m_PathLabel;
         private Button m_LoadAudioButton;
@@ -61,6 +64,7 @@ namespace Ori.AudioAnalyzer.Editor
 
             QueryWindowElements();
             CreateWaveformView();
+            CreateFluxVisualizer();
             AddListeners();
             CreateOrchestrator();
             UpdateAudioPath(m_AudioPath);
@@ -83,6 +87,7 @@ namespace Ori.AudioAnalyzer.Editor
             m_RemoveAudioButton = rootVisualElement.Q<Button>("RemoveAudioButton");
             m_AnalyzeAudioButton = rootVisualElement.Q<Button>("AnalyzeButton");
             m_CreateFluxButton = rootVisualElement.Q<Button>("CreateFluxButton");
+            m_FluxViewSection =  rootVisualElement.Q<VisualElement>("FluxViewSection");
         }
         
         private void CreateWaveformView()
@@ -97,6 +102,18 @@ namespace Ori.AudioAnalyzer.Editor
             m_WaveformView.style.width = Length.Percent(100);
             
             m_WaveformViewSection.Add(m_WaveformView);
+        }
+        
+        private void CreateFluxVisualizer()
+        {
+            m_FluxView = new FluxView();
+            
+            m_FluxView.style.flexGrow = 1;
+    
+            m_FluxView.style.height = Length.Percent(100);
+            m_FluxView.style.width = Length.Percent(100);
+            
+            m_FluxViewSection.Add(m_WaveformView);
         }
         
         private void AddListeners()
@@ -116,7 +133,9 @@ namespace Ori.AudioAnalyzer.Editor
         {
             try
             {
-                m_Orchestrator.CreateFlux();
+                List<Flux> fluxes = m_Orchestrator.CreateFlux();
+                
+                m_FluxView.UpdateData(fluxes);
             }
             catch (Exception e)
             {

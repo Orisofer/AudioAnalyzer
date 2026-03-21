@@ -35,6 +35,10 @@
                 <ui:Button name="CreateFluxButton" class="button button-create-flux" text="Create Flux" />
             </ui:VisualElement>
             
+            <ui:VisualElement name="FluxViewSection" class="flux-view-container">
+                
+            </ui:VisualElement>
+            
         </ui:VisualElement>
         
     </ui:VisualElement>

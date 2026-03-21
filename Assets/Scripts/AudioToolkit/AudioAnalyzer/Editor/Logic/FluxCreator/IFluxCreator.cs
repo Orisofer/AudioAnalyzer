@@ -1,10 +1,10 @@
-using UnityEngine;
+using System.Collections.Generic;
 
 namespace Ori.AudioAnalyzer.Core
 {
     public interface IFluxCreator
     {
-        public void CreateFlux(Spectrogram spectrogram);
+        public List<Flux> CreateFlux(Spectrogram spectrogram);
     }
 }
 

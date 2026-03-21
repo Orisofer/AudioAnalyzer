@@ -33,15 +33,18 @@ namespace Ori.AudioAnalyzer.Core
             m_HiHatsOnsets = new List<int>();
         }
 
-        public void CreateFlux(Spectrogram spectrogram)
+        public List<Flux> CreateFlux(Spectrogram spectrogram)
         {
             if (spectrogram == null || spectrogram.Spectra == null || spectrogram.Spectra.Length == 0)
             {
                 Debug.LogWarning("No Spectrogram specified for Multiband FluxCreator");
-                return;
+                return null;
             }
 
             Reset();
+            
+            // create result variable
+            List<Flux> result = new List<Flux>();
             
             // 1. separate bins into instruments
             
@@ -151,6 +154,12 @@ namespace Ori.AudioAnalyzer.Core
                     }
                 }
             }
+
+            Flux kickFlux = new Flux("Kicks", m_KicksFlux, m_KicksOnsets, m_KicksFluxTotalSum, averageEnergyInRegion);
+            
+            result.Add(kickFlux);
+
+            return result;
         }
 
         private void EvaluateRegionFlux(ref float[] instrument, int binsEndIndex, Spectrum prev,Spectrum curr,

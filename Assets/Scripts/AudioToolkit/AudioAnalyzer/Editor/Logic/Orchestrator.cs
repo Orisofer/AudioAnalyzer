@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 namespace Ori.AudioAnalyzer.Core
@@ -11,6 +12,8 @@ namespace Ori.AudioAnalyzer.Core
         private Spectrogram m_Spectrogram;
         private Signal m_Signal;
         private string m_AudioPath;
+        
+        public event Action<Flux> FluxCreated;
         
         internal Orchestrator()
         {
@@ -64,19 +67,22 @@ namespace Ori.AudioAnalyzer.Core
             return m_Spectrogram;
         }
 
-        internal void CreateFlux(Spectrogram spectrogram = null)
+        internal List<Flux> CreateFlux(Spectrogram spectrogram = null)
         {
+            List<Flux> fluxes = null;
             if (spectrogram == null)
             {
                 if (m_Spectrogram != null)
                 {
-                    m_FluxCreator.CreateFlux(m_Spectrogram);
+                   fluxes = m_FluxCreator.CreateFlux(m_Spectrogram);
                 }
             }
             else
             {
-                m_FluxCreator.CreateFlux(spectrogram);
+                fluxes = m_FluxCreator.CreateFlux(spectrogram);
             }
+            
+            return fluxes;
         }
         
         private void NormalizeSignal(Signal signal)
