@@ -6,14 +6,14 @@ namespace Ori.AudioAnalyzer.Core
 {
     public class MultibandFluxCreator : IFluxCreator
     {
-        private const float KICK_FREQUENCY_MAX = 150;
+        private const float KICK_FREQUENCY_MAX = 120;
         private const float SNARE_FREQUENCY_MAX = 2000;
         private const float HIHAT_FREQUENCY_MAX = 15000;
         private const float THRESHOLD_SENSITIVITY_MULTIPLIER = 1.65f;
-        private const float REGION_AVERAGE_ENERGY_MULTIPLIER = 5f;
+        private const float REGION_AVERAGE_ENERGY_MULTIPLIER = 110f;
 
         private const int FLUX_TIMELINE_WINDOW_SIZE = 20;
-
+        
         private List<int> m_KicksOnsets;
         private List<int> m_SnaresOnsets;
         private List<int> m_HiHatsOnsets;
@@ -40,6 +40,8 @@ namespace Ori.AudioAnalyzer.Core
                 Debug.LogWarning("No Spectrogram specified for Multiband FluxCreator");
                 return;
             }
+
+            Reset();
             
             // 1. separate bins into instruments
             
@@ -76,15 +78,12 @@ namespace Ori.AudioAnalyzer.Core
             
             // 3. go over the total flux with local average creating onsets
             
-            m_KicksOnsets.Clear();
-            m_SnaresOnsets.Clear();
-            m_HiHatsOnsets.Clear();
-            
             Spectrum[] spectra = spectrogram.Spectra;
 
             int halfWindowSize = (int)(FLUX_TIMELINE_WINDOW_SIZE * 0.5f);
+            int positionExcludeSurrounding = 1;
 
-            float averageEnergyInRegion = m_KicksFluxTotalSum / m_KicksFlux.Length;
+            float averageEnergyInRegion = CalculateMedian(m_KicksFlux);
             float noiseThreshold = averageEnergyInRegion * REGION_AVERAGE_ENERGY_MULTIPLIER;
 
             for (int i = 0; i < m_KicksFlux.Length; i++)
@@ -97,11 +96,15 @@ namespace Ori.AudioAnalyzer.Core
 
                 for (int j = leftPointer; j < rightPointer + 1; j++)
                 {
-                    localAverageThreshold += m_KicksFlux[j];
+                    // exclude the current position itself and surrounding area
+                    if (j < i - positionExcludeSurrounding || j > i + positionExcludeSurrounding)
+                    {
+                        localAverageThreshold += m_KicksFlux[j];
+                    }
                 }
 
-                // average the window
-                localAverageThreshold /= windowElementCount;
+                // average the window - subtract the exclude surrounding area so it won't affect the locale average
+                localAverageThreshold /= (windowElementCount - ((positionExcludeSurrounding * 2) + 1));
                 
                 // add multiplier
                 localAverageThreshold *= THRESHOLD_SENSITIVITY_MULTIPLIER;
@@ -176,6 +179,47 @@ namespace Ori.AudioAnalyzer.Core
         {
             int binIndex = (int)((fftSize * frequency) / sampleRate);
             return binIndex;
+        }
+        
+        private float CalculateMedian(float[] sourceArray)
+        {
+            if (sourceArray == null || sourceArray.Length == 0)
+            {
+                return 0f;
+            }
+            
+            int arrayLength = sourceArray.Length;
+
+            // Create a copy so we don't mutate the original timeline's order
+            float[] sortedArray = new float[arrayLength];
+            Array.Copy(sourceArray, sortedArray, arrayLength);
+            Array.Sort(sortedArray);
+
+            int halfLengthIndex = arrayLength / 2;
+
+            // If the length is even, the median is the average of the two middle elements
+            if (arrayLength % 2 == 0)
+            {
+                return (sortedArray[halfLengthIndex - 1] + sortedArray[halfLengthIndex]) * 0.5f;
+            }
+    
+            // If odd, it's exactly the middle element
+            return sortedArray[halfLengthIndex];
+        }
+
+        private void Reset()
+        {
+            m_KicksFluxTotalSum = 0f;
+            m_SnaresFluxTotalSum = 0f;
+            m_HiHatsFluxTotalSum = 0f;
+
+            m_KicksFlux = null;
+            m_SnaresFlux = null;
+            m_HiHatsFlux = null;
+            
+            m_KicksOnsets.Clear();
+            m_SnaresOnsets.Clear();
+            m_HiHatsOnsets.Clear();
         }
     }
 }
