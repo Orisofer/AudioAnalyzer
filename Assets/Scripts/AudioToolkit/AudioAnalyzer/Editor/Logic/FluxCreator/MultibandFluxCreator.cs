@@ -51,7 +51,6 @@ namespace Ori.AudioAnalyzer.Core
             List<Flux> result = new List<Flux>();
             
             // 1. separate bins into instruments
-            
             float sampleRate = spectrogram.SampleRate;
             int binsLength = spectrogram.Spectra[0].Bins.Length;
             int fftSize = binsLength * 2;
@@ -92,6 +91,8 @@ namespace Ori.AudioAnalyzer.Core
 
             float averageEnergyInRegion = CalculateMedian(m_KicksFlux);
             float noiseThreshold = averageEnergyInRegion * m_RegionAverageEnergyMultiplier;
+            
+            float[] averageThresholds = new float[m_KicksFlux.Length];
 
             for (int i = 0; i < m_KicksFlux.Length; i++)
             {
@@ -115,6 +116,8 @@ namespace Ori.AudioAnalyzer.Core
                 
                 // add multiplier
                 localAverageThreshold *= m_ThresholdSensitivityMultiplier;
+                
+                averageThresholds[i] = localAverageThreshold;
 
                 // if it passes the threshold we validate its not local maxima
                 if (m_KicksFlux[i] > noiseThreshold && m_KicksFlux[i] > localAverageThreshold)
@@ -159,7 +162,7 @@ namespace Ori.AudioAnalyzer.Core
                 }
             }
 
-            Flux kickFlux = new Flux("Kicks", m_KicksFlux, m_KicksOnsets, m_KicksFluxTotalSum, averageEnergyInRegion);
+            Flux kickFlux = new Flux("Kicks", m_KicksFlux, averageThresholds, m_KicksOnsets, spectrogram.HopSize);
             
             result.Add(kickFlux);
 

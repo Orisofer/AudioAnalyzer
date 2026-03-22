@@ -16,7 +16,8 @@ namespace Ori.AudioAnalyzer.Editor.View
         
         private List<int> m_Onsets;
         private float[] m_FluxData;
-        private float m_MedianEnergy;
+        private float[] m_AverageThresholds;
+        private float m_HopSize;
         
         // Visual Settings
         private Color m_FluxColor;
@@ -158,7 +159,8 @@ namespace Ori.AudioAnalyzer.Editor.View
             Flux data = fluxes[0];
             
             m_FluxData = data.FluxData;
-            m_MedianEnergy = data.MedianEnergy;
+            m_AverageThresholds =  data.AverageThresholds;
+            m_HopSize = data.HopSize;
             m_Onsets = data.Onsets;
             
             // Mark the GRAPH area dirty, not the whole view
@@ -204,29 +206,38 @@ namespace Ori.AudioAnalyzer.Editor.View
                 if (i == 0) painter.MoveTo(new Vector2(x, y));
                 else painter.LineTo(new Vector2(x, y));
             }
-            painter.Stroke(); 
-
+            painter.Stroke();
+            
             // DRAW THRESHOLD 
-            // Note: Now using the synced parameter from the struct instead of a disconnected variable
-            float currentThreshold = m_MedianEnergy * m_CurrentParameters.ThresholdSensitivityMultiplier;
-            float normalizedThresholdY = currentThreshold / maxFlux;
-            float thresholdY = height - (normalizedThresholdY * height);
-
             painter.BeginPath();
             painter.strokeColor = m_ThresholdColor;
             painter.lineWidth = 1.0f;
-            painter.MoveTo(new Vector2(0, thresholdY));
-            painter.LineTo(new Vector2(width, thresholdY));
-            painter.Stroke();
 
+            for (int i = 0; i < m_AverageThresholds.Length; i++)
+            {
+                float x = i * xStep;
+                float normalizedY = m_AverageThresholds[i] / maxFlux;
+                float y = height - (normalizedY * height);
+
+                if (i == 0) painter.MoveTo(new Vector2(x, y));
+                else painter.LineTo(new Vector2(x, y));
+            }
+            
+            painter.Stroke();
+            
             // DRAW ONSETS
             if (m_Onsets != null && m_Onsets.Count > 0)
             {
                 painter.fillColor = m_OnsetColor; 
                 
-                foreach (int onsetIndex in m_Onsets)
+                foreach (int onsetSample in m_Onsets)
                 {
-                    if (onsetIndex < 0 || onsetIndex >= m_FluxData.Length) continue;
+                    int onsetIndex = (int)(onsetSample / m_HopSize);
+
+                    if (onsetIndex < 0 || onsetIndex >= m_FluxData.Length)
+                    {
+                        continue;
+                    }
 
                     float x = onsetIndex * xStep;
                     float normalizedY = m_FluxData[onsetIndex] / maxFlux;
