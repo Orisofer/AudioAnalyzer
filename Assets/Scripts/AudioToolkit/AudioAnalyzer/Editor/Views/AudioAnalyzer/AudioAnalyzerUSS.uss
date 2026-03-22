@@ -138,5 +138,5 @@
 }
 
 .flux-view-legend-item-dot-onsets {
-    background-color: #728aae;
+    background-color: #ec9068;
 }
