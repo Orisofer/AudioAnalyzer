@@ -141,9 +141,14 @@ namespace Ori.AudioAnalyzer.Editor.View
             }
         }
         
-        private void OnFluxParametersUpdated(FluxCreatorParameters newParameters)
+        private void OnFluxParametersUpdated(FluxCreatorParameters newParameters, bool recalculate)
         {
             m_Orchestrator.UpdateFluxParameters(newParameters);
+
+            if (recalculate)
+            {
+                OnCreateFluxButtonClicked();
+            }
         }
 
         private void OnAnalyzeAudioClicked()

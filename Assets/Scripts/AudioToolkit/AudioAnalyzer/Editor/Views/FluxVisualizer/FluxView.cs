@@ -19,6 +19,12 @@ namespace Ori.AudioAnalyzer.Editor.View
         private float[] m_AverageThresholds;
         private float m_HopSize;
         
+        // Flux creator parameters ranges
+        private float m_SensitivityMin = 0f;
+        private float m_SensitivityMax = 10f;
+        private int m_WindowSizeMin = 0;
+        private int m_WindowSizeMax = 150;
+        
         // Visual Settings
         private Color m_FluxColor;
         private Color m_ThresholdColor;
@@ -38,7 +44,7 @@ namespace Ori.AudioAnalyzer.Editor.View
         // Current Parameters State
         private FluxCreatorParameters m_CurrentParameters;
 
-        public event Action<FluxCreatorParameters> FluxParametersUpdated;
+        public event Action<FluxCreatorParameters, bool> FluxParametersUpdated;
 
         public FluxView()
         {
@@ -97,9 +103,21 @@ namespace Ori.AudioAnalyzer.Editor.View
             legendContainer.Add(m_LegendDetectedOnsets);
 
             // 2. Create Sliders
-            Slider sensitivitySlider = new Slider("Sensitivity Mult.", 0.1f, 5.0f) { value = m_CurrentParameters.ThresholdSensitivityMultiplier };
+            Slider sensitivitySlider = new Slider("Sensitivity Mult.", m_SensitivityMin, m_SensitivityMax) { value = m_CurrentParameters.ThresholdSensitivityMultiplier };
             Slider regionEnergySlider = new Slider("Region Energy Mult.", 10f, 300f) { value = m_CurrentParameters.RegionAverageEnergyMultiplier };
-            SliderInt windowSizeSlider = new SliderInt("Window Size", 5, 100) { value = m_CurrentParameters.FluxTimelineWindowSize };
+            SliderInt windowSizeSlider = new SliderInt("Window Size", m_WindowSizeMin, m_WindowSizeMax) { value = m_CurrentParameters.FluxTimelineWindowSize };
+            
+            EventCallback<PointerCaptureOutEvent> onDragEnd = evt => NotifyParametersUpdatedAndRecalculate();
+            EventCallback<KeyUpEvent> onKeyUp = evt => NotifyParametersUpdatedAndRecalculate();
+            
+            sensitivitySlider.RegisterCallback(onDragEnd);
+            sensitivitySlider.RegisterCallback(onKeyUp);
+
+            regionEnergySlider.RegisterCallback(onDragEnd);
+            regionEnergySlider.RegisterCallback(onKeyUp);
+
+            windowSizeSlider.RegisterCallback(onDragEnd);
+            windowSizeSlider.RegisterCallback(onKeyUp);
 
             // 3. Bind Events
             sensitivitySlider.RegisterValueChangedCallback(evt => 
@@ -147,7 +165,12 @@ namespace Ori.AudioAnalyzer.Editor.View
 
         private void NotifyParametersUpdated()
         {
-            FluxParametersUpdated?.Invoke(m_CurrentParameters);
+            FluxParametersUpdated?.Invoke(m_CurrentParameters, false);
+        }
+        
+        private void NotifyParametersUpdatedAndRecalculate()
+        {
+            FluxParametersUpdated?.Invoke(m_CurrentParameters, true);
         }
 
         public void UpdateData(List<Flux> fluxes)
