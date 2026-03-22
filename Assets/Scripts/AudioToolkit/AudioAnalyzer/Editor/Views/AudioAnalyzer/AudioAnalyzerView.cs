@@ -41,7 +41,10 @@ namespace Ori.AudioAnalyzer.Editor.View
         [MenuItem("Tools/AudioAnalyzer/AudioAnalyzerWindow")]
         public static void ShowWindow()
         {
-            var window = GetWindow<AudioAnalyzerView>();
+            Type inspectorType = System.Type.GetType("UnityEditor.InspectorWindow,UnityEditor.dll");
+            
+            AudioAnalyzerView window = GetWindow<AudioAnalyzerView>(inspectorType);
+            
             window.titleContent = new GUIContent("Audio Analyzer");
         }
 
@@ -94,7 +97,7 @@ namespace Ori.AudioAnalyzer.Editor.View
         {
             m_WaveformView = new WaveformView();
             
-            m_WaveformView.AddToClassList("waveform");
+            m_WaveformView.AddToClassList("waveform-view");
             
             m_WaveformViewSection.Add(m_WaveformView);
         }

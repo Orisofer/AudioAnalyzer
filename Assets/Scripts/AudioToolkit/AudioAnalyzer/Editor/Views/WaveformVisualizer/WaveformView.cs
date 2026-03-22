@@ -6,20 +6,21 @@ namespace Ori.AudioAnalyzer.Editor.View
 {
     internal class WaveformView : VisualElement
     {
-        private readonly Color m_WaveformColor = new Color(0.12f, 0.12f, 0.12f);
+        private Color m_WaveformColor;
         private LevelPoint[] m_PrecomputedLevels;
         private Signal m_Signal;
 
         internal WaveformView()
         {
-            // Register the drawing callback
             generateVisualContent += OnGenerateVisualContent;
         }
         
         internal void SetSignal(Signal signal)
         {
             m_Signal = signal;
-            Precompute(1024); // Precompute for a standard max width
+            
+            EnsureWaveformColor();
+            Precompute(1024); 
             MarkDirtyRepaint();
         }
 
@@ -72,6 +73,14 @@ namespace Ori.AudioAnalyzer.Editor.View
                     if (val > max) max = val;
                 }
                 m_PrecomputedLevels[i] = new LevelPoint { Min = min, Max = max };
+            }
+        }
+
+        private void EnsureWaveformColor()
+        {
+            if (m_WaveformColor == default)
+            {
+                m_WaveformColor = resolvedStyle.color;
             }
         }
 
