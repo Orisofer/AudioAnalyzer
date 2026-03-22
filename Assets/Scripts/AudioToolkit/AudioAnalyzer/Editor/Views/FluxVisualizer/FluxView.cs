@@ -14,19 +14,25 @@ namespace Ori.AudioAnalyzer.Editor.View
         private const string CLASS_NAME_FLUX_LEGEND_ITEM = "flux-view-legend-item";
         private const string CLASS_NAME_FLUX_LEGEND_ITEM_DOT = "flux-view-legend-item-dot";
         
-        // Visual Settings
-        private readonly Color m_FluxColor = Color.cyan;
-        private readonly Color m_ThresholdColor = Color.red;
-        private readonly Color m_OnsetColor = Color.yellow;
-        private readonly float m_LineWidth = 1.2f;
-        
         private List<int> m_Onsets;
         private float[] m_FluxData;
         private float m_MedianEnergy;
+        
+        // Visual Settings
+        private Color m_FluxColor;
+        private Color m_ThresholdColor;
+        private Color m_OnsetColor;
+        private float m_LineWidth = 1.2f;
 
         // UI Elements
         private VisualElement m_GraphArea;
         private VisualElement m_ControlArea;
+        private VisualElement m_LegendFluxEnergy;
+        private VisualElement m_LegendLocalThreshold;
+        private VisualElement m_LegendDetectedOnsets;
+        private VisualElement m_DotFluxEnergy;
+        private VisualElement m_DotLocalThreshold;
+        private VisualElement m_DotDetectedOnsets;
         
         // Current Parameters State
         private FluxCreatorParameters m_CurrentParameters;
@@ -76,14 +82,18 @@ namespace Ori.AudioAnalyzer.Editor.View
             VisualElement legendContainer = new VisualElement();
             
             legendContainer.AddToClassList("container-flux-view-legend");
+            
+            m_DotFluxEnergy = new VisualElement();
+            m_DotLocalThreshold  = new VisualElement();
+            m_DotDetectedOnsets = new VisualElement();
 
-            VisualElement legendElementEnergy = CreateLegendItem("Flux Energy", CLASS_NAME_FLUX_ENERGY);
-            VisualElement legendElementLocalThreshold = CreateLegendItem("Local Threshold", CLASS_NAME_LOCAL_THRESHOLD);
-            VisualElement legendElementDetectedOnsets = CreateLegendItem("Detected Onsets", CLASS_NAME_ONSET);
+            m_LegendFluxEnergy = CreateLegendItem("Flux Energy", CLASS_NAME_FLUX_ENERGY, ref m_DotFluxEnergy);
+            m_LegendLocalThreshold = CreateLegendItem("Local Threshold", CLASS_NAME_LOCAL_THRESHOLD, ref m_DotLocalThreshold);
+            m_LegendDetectedOnsets = CreateLegendItem("Detected Onsets", CLASS_NAME_ONSET, ref m_DotDetectedOnsets);
 
-            legendContainer.Add(legendElementEnergy);
-            legendContainer.Add(legendElementLocalThreshold);
-            legendContainer.Add(legendElementDetectedOnsets);
+            legendContainer.Add(m_LegendFluxEnergy);
+            legendContainer.Add(m_LegendLocalThreshold);
+            legendContainer.Add(m_LegendDetectedOnsets);
 
             // 2. Create Sliders
             Slider sensitivitySlider = new Slider("Sensitivity Mult.", 0.1f, 5.0f) { value = m_CurrentParameters.ThresholdSensitivityMultiplier };
@@ -117,20 +127,18 @@ namespace Ori.AudioAnalyzer.Editor.View
             Add(m_ControlArea);
         }
 
-        private VisualElement CreateLegendItem(string text, string itemId)
+        private VisualElement CreateLegendItem(string text, string itemId, ref VisualElement dotRef)
         {
             VisualElement container = new VisualElement();
             
             container.AddToClassList(CLASS_NAME_FLUX_LEGEND_ITEM);
-
-            VisualElement dot = new VisualElement();
             
-            dot.AddToClassList(CLASS_NAME_FLUX_LEGEND_ITEM_DOT);
-            dot.AddToClassList($"{CLASS_NAME_FLUX_LEGEND_ITEM_DOT}-{itemId}");
+            dotRef.AddToClassList(CLASS_NAME_FLUX_LEGEND_ITEM_DOT);
+            dotRef.AddToClassList($"{CLASS_NAME_FLUX_LEGEND_ITEM_DOT}-{itemId}");
 
             Label label = new Label(text);
 
-            container.Add(dot);
+            container.Add(dotRef);
             container.Add(label);
 
             return container;
@@ -143,6 +151,8 @@ namespace Ori.AudioAnalyzer.Editor.View
 
         public void UpdateData(List<Flux> fluxes)
         {
+            EnsureColorsCachedFromUss();
+            
             if (fluxes == null || fluxes.Count == 0) return;
             
             Flux data = fluxes[0];
@@ -153,6 +163,13 @@ namespace Ori.AudioAnalyzer.Editor.View
             
             // Mark the GRAPH area dirty, not the whole view
             m_GraphArea.MarkDirtyRepaint();
+        }
+
+        private void EnsureColorsCachedFromUss()
+        {
+            m_FluxColor = m_DotFluxEnergy.resolvedStyle.backgroundColor;
+            m_ThresholdColor = m_DotLocalThreshold.resolvedStyle.backgroundColor;
+            m_OnsetColor = m_DotDetectedOnsets.resolvedStyle.backgroundColor;
         }
 
         private void OnGenerateVisualContent(MeshGenerationContext mgc)
