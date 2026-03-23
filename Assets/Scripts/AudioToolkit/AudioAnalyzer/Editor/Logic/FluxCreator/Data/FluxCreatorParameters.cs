@@ -5,7 +5,7 @@ namespace Ori.AudioAnalyzer.Core
     public struct FluxCreatorParameters
     {
         public float ThresholdSensitivityMultiplier;
-        public float RegionAverageEnergyMultiplier;
+        public float NoiseFloorMultiplier;
         public int FluxTimelineWindowSize;
     }
 }

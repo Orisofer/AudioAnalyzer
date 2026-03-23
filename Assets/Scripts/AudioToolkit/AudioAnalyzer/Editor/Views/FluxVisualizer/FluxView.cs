@@ -17,7 +17,7 @@ namespace Ori.AudioAnalyzer.Editor.View
         private const string CLASS_NAME_FLUX_LEGEND_ITEM_DOT = "flux-view-legend-item-dot";
         private const string CLASS_NAME_SLIDER = "container-slider";
         private const string CLASS_NAME_SLIDER_THRESHOLD = "threshold";
-        private const string CLASS_NAME_SLIDER_REGION_ENERGY = "region-energy";
+        private const string CLASS_NAME_SLIDER_NOISE_FLOOR = "noise-floor";
         private const string CLASS_NAME_SLIDER_WINDOW_SIZE = "window-size";
         private const string CLASS_NAME_SLIDER_LABEL = "slider-value-label";
         
@@ -57,8 +57,8 @@ namespace Ori.AudioAnalyzer.Editor.View
         private VisualElement m_DotNoiseFloor;
         
         // Sliders
-        private Slider m_SensitivitySlider;
-        private Slider m_RegionEnergySlider;
+        private Slider m_ThresholdSlider;
+        private Slider m_NoiseFloorSlider;
         private Slider m_WindowSizeSlider;
         
         // Current Parameters State
@@ -72,7 +72,7 @@ namespace Ori.AudioAnalyzer.Editor.View
             m_CurrentParameters = new FluxCreatorParameters
             {
                 ThresholdSensitivityMultiplier = 1.65f,
-                RegionAverageEnergyMultiplier = 110f,
+                NoiseFloorMultiplier = 110f,
                 FluxTimelineWindowSize = 20
             };
 
@@ -114,28 +114,28 @@ namespace Ori.AudioAnalyzer.Editor.View
             sliderContainerRegionEnerdyMult.AddToClassList(CLASS_NAME_SLIDER);
             sliderContainerWindowSize.AddToClassList(CLASS_NAME_SLIDER);
             
-            m_SensitivitySlider = new Slider("Sensitivity Mult.", m_SensitivityMin, m_SensitivityMax) { value = m_CurrentParameters.ThresholdSensitivityMultiplier };
-            m_RegionEnergySlider = new Slider("Region Energy Mult.", 10f, 300f) { value = m_CurrentParameters.RegionAverageEnergyMultiplier };
+            m_ThresholdSlider = new Slider("Threshold Sensitivity Mult.", m_SensitivityMin, m_SensitivityMax) { value = m_CurrentParameters.ThresholdSensitivityMultiplier };
+            m_NoiseFloorSlider = new Slider("Noise Floor Mult.", 10f, 300f) { value = m_CurrentParameters.NoiseFloorMultiplier };
             m_WindowSizeSlider = new Slider("Window Size", m_WindowSizeMin, m_WindowSizeMax) { value = m_CurrentParameters.FluxTimelineWindowSize };
             
-            m_SensitivitySlider.AddToClassList($"{CLASS_NAME_SLIDER}-{CLASS_NAME_SLIDER_THRESHOLD}");
-            m_RegionEnergySlider.AddToClassList($"{CLASS_NAME_SLIDER}-{CLASS_NAME_SLIDER_REGION_ENERGY}");
+            m_ThresholdSlider.AddToClassList($"{CLASS_NAME_SLIDER}-{CLASS_NAME_SLIDER_THRESHOLD}");
+            m_NoiseFloorSlider.AddToClassList($"{CLASS_NAME_SLIDER}-{CLASS_NAME_SLIDER_NOISE_FLOOR}");
             m_WindowSizeSlider.AddToClassList($"{CLASS_NAME_SLIDER}-{CLASS_NAME_SLIDER_WINDOW_SIZE}");
             
             EventCallback<PointerCaptureOutEvent> onDragEnd = evt => NotifyParametersUpdatedAndRecalculate();
             EventCallback<KeyUpEvent> onKeyUp = evt => NotifyParametersUpdatedAndRecalculate();
             
-            m_SensitivitySlider.RegisterCallback(onDragEnd);
-            m_SensitivitySlider.RegisterCallback(onKeyUp);
+            m_ThresholdSlider.RegisterCallback(onDragEnd);
+            m_ThresholdSlider.RegisterCallback(onKeyUp);
 
-            m_RegionEnergySlider.RegisterCallback(onDragEnd);
-            m_RegionEnergySlider.RegisterCallback(onKeyUp);
+            m_NoiseFloorSlider.RegisterCallback(onDragEnd);
+            m_NoiseFloorSlider.RegisterCallback(onKeyUp);
 
             m_WindowSizeSlider.RegisterCallback(onDragEnd);
             m_WindowSizeSlider.RegisterCallback(onKeyUp);
             
             Label sensitivityValueLabel = new Label(m_CurrentParameters.ThresholdSensitivityMultiplier.ToString(CultureInfo.InvariantCulture));
-            Label regionEnergyMultiplierValueLabel = new Label(m_CurrentParameters.RegionAverageEnergyMultiplier.ToString(CultureInfo.InvariantCulture));
+            Label regionEnergyMultiplierValueLabel = new Label(m_CurrentParameters.NoiseFloorMultiplier.ToString(CultureInfo.InvariantCulture));
             Label windowSizeValueLabel = new Label(m_CurrentParameters.FluxTimelineWindowSize.ToString(CultureInfo.InvariantCulture));
             
             sensitivityValueLabel.AddToClassList(CLASS_NAME_SLIDER_LABEL);
@@ -143,7 +143,7 @@ namespace Ori.AudioAnalyzer.Editor.View
             windowSizeValueLabel.AddToClassList(CLASS_NAME_SLIDER_LABEL);
             
             // 3. Bind Events
-            m_SensitivitySlider.RegisterValueChangedCallback(evt =>
+            m_ThresholdSlider.RegisterValueChangedCallback(evt =>
             {
                 float newValue = evt.newValue;
                 m_CurrentParameters.ThresholdSensitivityMultiplier = newValue;
@@ -151,10 +151,10 @@ namespace Ori.AudioAnalyzer.Editor.View
                 NotifyParametersUpdated();
             });
 
-            m_RegionEnergySlider.RegisterValueChangedCallback(evt => 
+            m_NoiseFloorSlider.RegisterValueChangedCallback(evt => 
             {
                 float newValue = evt.newValue;
-                m_CurrentParameters.RegionAverageEnergyMultiplier = evt.newValue;
+                m_CurrentParameters.NoiseFloorMultiplier = evt.newValue;
                 regionEnergyMultiplierValueLabel.text = newValue.ToString(CultureInfo.InvariantCulture);
                 NotifyParametersUpdated();
             });
@@ -167,8 +167,8 @@ namespace Ori.AudioAnalyzer.Editor.View
                 NotifyParametersUpdated();
             });
             
-            sliderContainerSensitivity.Add(m_SensitivitySlider);
-            sliderContainerRegionEnerdyMult.Add(m_RegionEnergySlider);
+            sliderContainerSensitivity.Add(m_ThresholdSlider);
+            sliderContainerRegionEnerdyMult.Add(m_NoiseFloorSlider);
             sliderContainerWindowSize.Add(m_WindowSizeSlider);
             
             sliderContainerSensitivity.Add(sensitivityValueLabel);
@@ -336,7 +336,7 @@ namespace Ori.AudioAnalyzer.Editor.View
             // DRAW NOISE FLOOR
             painter.BeginPath();
             painter.strokeColor = m_NoiseFloorColor;
-            painter.lineWidth = 1.0f;
+            painter.lineWidth = m_LineWidth;
 
             float noiseXstart = 0;
             float noiseXend = width;

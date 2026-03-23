@@ -48,11 +48,11 @@
 /* =================== BUTTON ======================= */
 
 .button {
-    background-color: #191919;
+    background-color: #1e1e1e;
     color: #e1e1e1;
     border-radius: 8px;
     border-width: 1px;
-    border-color: #232323;
+    border-color: #1c1c1c;
     padding: 8px 12px;
     margin-top: 10px;
     width: 100%;
@@ -93,7 +93,7 @@
     flex-grow: 1;
 }
 
-.container-slider-region-energy {
+.container-slider-noise-floor {
     flex-grow: 1;
 }
 

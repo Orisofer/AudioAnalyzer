@@ -11,7 +11,7 @@ namespace Ori.AudioAnalyzer.Core
         private const float HIHAT_FREQUENCY_MAX = 15000;
         
         private float m_ThresholdSensitivityMultiplier;
-        private float m_RegionAverageEnergyMultiplier;
+        private float m_NoiseFloorMultiplier;
         private int m_FluxTimelineWindowSize;
         
         private List<int> m_KicksOnsets;
@@ -33,7 +33,7 @@ namespace Ori.AudioAnalyzer.Core
             m_HiHatsOnsets = new List<int>();
 
             m_ThresholdSensitivityMultiplier = 1.65f;
-            m_RegionAverageEnergyMultiplier = 110f;
+            m_NoiseFloorMultiplier = 110f;
             m_FluxTimelineWindowSize = 20;
         }
 
@@ -90,7 +90,7 @@ namespace Ori.AudioAnalyzer.Core
             int positionExcludeSurrounding = 1;
 
             float averageEnergyInRegion = CalculateMedian(m_KicksFlux);
-            float noiseFloor = averageEnergyInRegion * m_RegionAverageEnergyMultiplier;
+            float noiseFloor = averageEnergyInRegion * m_NoiseFloorMultiplier;
             
             float[] averageThresholds = new float[m_KicksFlux.Length];
 
@@ -177,7 +177,7 @@ namespace Ori.AudioAnalyzer.Core
         public void SetParameters(FluxCreatorParameters parameters)
         {
             m_ThresholdSensitivityMultiplier =  parameters.ThresholdSensitivityMultiplier;
-            m_RegionAverageEnergyMultiplier = parameters.RegionAverageEnergyMultiplier;
+            m_NoiseFloorMultiplier = parameters.NoiseFloorMultiplier;
             m_FluxTimelineWindowSize  = parameters.FluxTimelineWindowSize;
         }
 
