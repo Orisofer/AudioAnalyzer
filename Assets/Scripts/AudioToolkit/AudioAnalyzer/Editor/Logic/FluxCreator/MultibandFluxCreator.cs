@@ -10,21 +10,17 @@ namespace Ori.AudioAnalyzer.Core
         private const float SNARE_FREQUENCY_MAX = 2000;
         private const float HIHAT_FREQUENCY_MAX = 15000;
         
-        private float m_ThresholdSensitivityMultiplier;
-        private float m_NoiseFloorMultiplier;
-        private int m_FluxTimelineWindowSize;
-        
         private List<int> m_KicksOnsets;
         private List<int> m_SnaresOnsets;
         private List<int> m_HiHatsOnsets;
         
+        private float m_ThresholdSensitivityMultiplier;
+        private float m_NoiseFloorMultiplier;
+        private int m_FluxTimelineWindowSize;
+        
         private float[] m_KicksFlux;
         private float[] m_SnaresFlux;
         private float[] m_HiHatsFlux;
-        
-        private float m_KicksFluxTotalSum;
-        private float m_SnaresFluxTotalSum;
-        private float m_HiHatsFluxTotalSum;
 
         public MultibandFluxCreator()
         {
@@ -47,12 +43,14 @@ namespace Ori.AudioAnalyzer.Core
 
             Reset();
             
-            // create result variable
             List<Flux> result = new List<Flux>();
             
             // 1. separate bins into instruments
+            
+            Spectrum[] spectra = spectrogram.Spectra;
             float sampleRate = spectrogram.SampleRate;
-            int binsLength = spectrogram.Spectra[0].Bins.Length;
+            int spectraLength = spectra.Length;
+            int binsLength = spectra[0].Bins.Length;
             int fftSize = binsLength * 2;
 
             int kickBinsEndIndex = GetBinIndex(KICK_FREQUENCY_MAX, sampleRate, fftSize);
@@ -61,11 +59,11 @@ namespace Ori.AudioAnalyzer.Core
             
             // 2. loop over the bins for each spectrum to create the flux timeline
             
-            m_KicksFlux = new float[spectrogram.Spectra.Length];
-            m_SnaresFlux = new float[spectrogram.Spectra.Length];
-            m_HiHatsFlux = new float[spectrogram.Spectra.Length];
+            m_KicksFlux = new float[spectraLength];
+            m_SnaresFlux = new float[spectraLength];
+            m_HiHatsFlux = new float[spectraLength];
             
-            for (int i = 1; i < spectrogram.Spectra.Length; i++)
+            for (int i = 1; i < spectraLength; i++)
             {
                 Spectrum prev =  spectrogram.Spectra[i - 1];
                 Spectrum curr = spectrogram.Spectra[i];
@@ -73,105 +71,135 @@ namespace Ori.AudioAnalyzer.Core
                 int binIndexPointer = 0;
                 
                 // evaluate kick region
-                EvaluateRegionFlux(ref m_KicksFlux,  kickBinsEndIndex, prev, curr, ref binIndexPointer, i, ref m_KicksFluxTotalSum);
+                EvaluateRegionFlux(ref m_KicksFlux,  kickBinsEndIndex, prev, curr, ref binIndexPointer, i);
                 
                 // evaluate snare region
-                EvaluateRegionFlux(ref m_SnaresFlux,  snareBinsEndIndex, prev, curr, ref binIndexPointer, i, ref m_SnaresFluxTotalSum);
+                EvaluateRegionFlux(ref m_SnaresFlux,  snareBinsEndIndex, prev, curr, ref binIndexPointer, i);
                 
                 // evaluate hihat region
-                EvaluateRegionFlux(ref m_HiHatsFlux,  hihatBinsEndIndex, prev, curr, ref binIndexPointer, i, ref m_HiHatsFluxTotalSum);
+                EvaluateRegionFlux(ref m_HiHatsFlux,  hihatBinsEndIndex, prev, curr, ref binIndexPointer, i);
             }
             
             // 3. go over the total flux with local average creating onsets
             
-            Spectrum[] spectra = spectrogram.Spectra;
-
-            int halfWindowSize = (int)(m_FluxTimelineWindowSize * 0.5f);
-            int positionExcludeSurrounding = 1;
-
+            float[] averageThresholdsKicks = new float[m_KicksFlux.Length];
+            float[] averageThresholdsSnares = new float[m_KicksFlux.Length];
+            float[] averageThresholdsHiHats = new float[m_KicksFlux.Length];
+            
             float averageEnergyInRegion = CalculateMedian(m_KicksFlux);
             float noiseFloor = averageEnergyInRegion * m_NoiseFloorMultiplier;
-            
-            float[] averageThresholds = new float[m_KicksFlux.Length];
+            int excludeWindowInAverage = 1;
 
-            for (int i = 0; i < m_KicksFlux.Length; i++)
+            m_KicksOnsets = CreateOnsets(ref m_KicksFlux, ref averageThresholdsKicks, spectraLength, noiseFloor,
+                excludeWindowInAverage, spectra);
+            
+            m_SnaresOnsets = CreateOnsets(ref m_SnaresFlux, ref averageThresholdsSnares, spectraLength, noiseFloor,
+                excludeWindowInAverage, spectra);
+            
+            m_HiHatsOnsets = CreateOnsets(ref m_HiHatsFlux, ref averageThresholdsHiHats, spectraLength, noiseFloor,
+                excludeWindowInAverage, spectra);
+
+            Flux kickFlux = new Flux("Kicks", m_KicksFlux, averageThresholdsKicks, m_KicksOnsets, noiseFloor, spectrogram.HopSize);
+            Flux snareFlux = new Flux("Snares", m_SnaresFlux, averageThresholdsSnares, m_SnaresOnsets, noiseFloor, spectrogram.HopSize);
+            Flux hihatFlux = new Flux("HiHats", m_HiHatsFlux, averageThresholdsHiHats, m_HiHatsOnsets, noiseFloor, spectrogram.HopSize);
+            
+            result.Add(kickFlux);
+            result.Add(snareFlux);
+            result.Add(hihatFlux);
+
+            return result;
+        }
+
+        private List<int> CreateOnsets(ref float[] fluxArray, ref float[] averageThresholds, int spectraLength,
+            float noiseFloor, int excludeWindowInAverage, Spectrum[] spectra)
+        {
+            List<int> onsets = new List<int>();
+            
+            int halfWindowSize = (int)(m_FluxTimelineWindowSize * 0.5f);
+            
+            for (int i = 0; i < spectraLength; i++)
             {
-                if (m_KicksFlux[i] < noiseFloor)
+                if (fluxArray[i] < noiseFloor)
                 {
                     continue;
                 }
                 
                 int leftPointer = Mathf.Max(0, i - halfWindowSize);
-                int rightPointer =  Mathf.Min(i + halfWindowSize, m_KicksFlux.Length - 1);
-                int windowElementCount = rightPointer - leftPointer + 1;
+                int rightPointer =  Mathf.Min(i + halfWindowSize, fluxArray.Length - 1);
 
-                float localAverageThreshold = 0f;
-
-                for (int j = leftPointer; j < rightPointer + 1; j++)
-                {
-                    // exclude the current position itself and surrounding area
-                    if (j < i - positionExcludeSurrounding || j > i + positionExcludeSurrounding)
-                    {
-                        localAverageThreshold += m_KicksFlux[j];
-                    }
-                }
-
-                // average the window - subtract the exclude surrounding area so it won't affect the locale average
-                localAverageThreshold /= (windowElementCount - ((positionExcludeSurrounding * 2) + 1));
-                
-                // add multiplier
-                localAverageThreshold *= m_ThresholdSensitivityMultiplier;
-                
-                averageThresholds[i] = localAverageThreshold;
+                float localAverageThreshold = CalculateLocalAverage(leftPointer,  rightPointer, i, fluxArray,
+                    excludeWindowInAverage, averageThresholds);
 
                 // if it passes the threshold we validate its not local maxima
-                if (m_KicksFlux[i] > localAverageThreshold)
+                if (fluxArray[i] > localAverageThreshold)
                 {
-                    if (i > 0 && i < m_KicksFlux.Length - 1)
+                    if (i > 0 && i < fluxArray.Length - 1)
                     {
-                        float leftValue = m_KicksFlux[i - 1];
-                        float rightValue = m_KicksFlux[i + 1];
+                        float leftValue = fluxArray[i - 1];
+                        float rightValue = fluxArray[i + 1];
                         
-                        if (m_KicksFlux[i] > leftValue && m_KicksFlux[i] > rightValue)
+                        if (fluxArray[i] > leftValue && fluxArray[i] > rightValue)
                         {
                             // it's a local maximum, add it to onset
-                            m_KicksOnsets.Add(spectra[i].StartingSample);
+                            onsets.Add(spectra[i].StartingSample);
                         }
                     }
                     else
                     {
                         if (i == 0)
                         {
-                            float rightValue = m_KicksFlux[i + 1];
+                            float rightValue = fluxArray[i + 1];
                             
-                            if (m_KicksFlux[i] > rightValue)
+                            if (fluxArray[i] > rightValue)
                             {
                                 // it's a local maximum, add it to onset
-                                m_KicksOnsets.Add(spectra[i].StartingSample);
+                                onsets.Add(spectra[i].StartingSample);
 
                                 continue;
                             }
                         }
 
-                        if (i == m_KicksFlux.Length - 1)
+                        if (i == fluxArray.Length - 1)
                         {
-                            float leftValue = m_KicksFlux[i - 1];
+                            float leftValue = fluxArray[i - 1];
                             
-                            if (m_KicksFlux[i] > leftValue)
+                            if (fluxArray[i] > leftValue)
                             {
                                 // it's a local maximum, add it to onset
-                                m_KicksOnsets.Add(spectra[i].StartingSample);
+                                onsets.Add(spectra[i].StartingSample);
                             }
                         }
                     }
                 }
             }
 
-            Flux kickFlux = new Flux("Kicks", m_KicksFlux, averageThresholds, m_KicksOnsets, noiseFloor, spectrogram.HopSize);
-            
-            result.Add(kickFlux);
+            return onsets;
+        }
 
-            return result;
+        private float CalculateLocalAverage(int leftPointer, int rightPointer, int fluxIndex,
+            float[] fluxArray, int excludeWindowInAverage, float[] averageThresholds)
+        {
+            float localAverageThreshold = 0;
+            int windowElementCount = rightPointer - leftPointer + 1;
+            
+            for (int j = leftPointer; j < rightPointer + 1; j++)
+            {
+                // exclude the current position itself and surrounding area
+                if (j < fluxIndex - excludeWindowInAverage || j > fluxIndex + excludeWindowInAverage)
+                {
+                    localAverageThreshold += fluxArray[j];
+                }
+            }
+
+            // average the window - subtract the exclude surrounding area so it won't affect the locale average
+            localAverageThreshold /= (windowElementCount - ((excludeWindowInAverage * 2) + 1));
+                
+            // add multiplier
+            localAverageThreshold *= m_ThresholdSensitivityMultiplier;
+                
+            averageThresholds[fluxIndex] = localAverageThreshold;
+            
+            return localAverageThreshold;
         }
 
         public void SetParameters(FluxCreatorParameters parameters)
@@ -182,7 +210,7 @@ namespace Ori.AudioAnalyzer.Core
         }
 
         private void EvaluateRegionFlux(ref float[] instrument, int binsEndIndex, Spectrum prev,Spectrum curr,
-                ref int binIndexPointer, int spectrumIndex, ref float fluxTotalSum)
+                ref int binIndexPointer, int spectrumIndex)
         {
             float regionDeltaSum = 0f;
             
@@ -194,7 +222,6 @@ namespace Ori.AudioAnalyzer.Core
             }
 
             instrument[spectrumIndex] = regionDeltaSum;
-            fluxTotalSum +=  regionDeltaSum;
         }
 
         private float BinDelta(Spectrum prev, Spectrum curr, int binIndex)
@@ -237,10 +264,6 @@ namespace Ori.AudioAnalyzer.Core
 
         private void Reset()
         {
-            m_KicksFluxTotalSum = 0f;
-            m_SnaresFluxTotalSum = 0f;
-            m_HiHatsFluxTotalSum = 0f;
-
             m_KicksFlux = null;
             m_SnaresFlux = null;
             m_HiHatsFlux = null;
@@ -251,4 +274,3 @@ namespace Ori.AudioAnalyzer.Core
         }
     }
 }
-

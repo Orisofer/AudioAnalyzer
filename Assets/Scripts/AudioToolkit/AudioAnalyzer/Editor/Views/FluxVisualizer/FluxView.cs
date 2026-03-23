@@ -239,7 +239,7 @@ namespace Ori.AudioAnalyzer.Editor.View
             
             if (fluxes == null || fluxes.Count == 0) return;
             
-            Flux data = fluxes[0];
+            Flux data = fluxes[2];
             
             m_FluxData = data.FluxData;
             m_AverageThresholds =  data.AverageThresholds;
