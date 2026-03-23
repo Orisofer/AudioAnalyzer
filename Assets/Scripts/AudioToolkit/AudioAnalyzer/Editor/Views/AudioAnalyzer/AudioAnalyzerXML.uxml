@@ -25,8 +25,8 @@
             <ui:Label name="FilePathLabel" text="No file selected" class="label-path" />
             
             <ui:VisualElement class="container container-audio-loaded-buttons">
-                <ui:Button name="AnalyzeButton" class="button button-analyze" text="Analyze Audio" />
                 <ui:Button name="RemoveAudioButton" class="button button-remove-audio" text="Remove Audio" />
+                <ui:Button name="AnalyzeButton" class="button button-analyze" text="Analyze Audio" />
             </ui:VisualElement>
             
         </ui:VisualElement>
