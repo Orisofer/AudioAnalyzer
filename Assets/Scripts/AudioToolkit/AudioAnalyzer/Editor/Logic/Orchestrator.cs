@@ -10,13 +10,17 @@ namespace Ori.AudioAnalyzer.Core
         private readonly IFluxCreator m_FluxCreator;
         
         private Spectrogram m_Spectrogram;
+        private FluxManager m_FluxManager;
         private Signal m_Signal;
         private string m_AudioPath;
+        
+        public FluxManager FluxManager => m_FluxManager;
         
         internal Orchestrator()
         {
             m_AudioAnalyzer = new AudioAnalyzer();
             m_FluxCreator = new MultibandFluxCreator();
+            m_FluxManager =  new FluxManager();
         }
 
         internal Signal ParseAudio(string audioPath = null, bool normalized = true)
@@ -68,6 +72,7 @@ namespace Ori.AudioAnalyzer.Core
         internal List<Flux> CreateFlux(Spectrogram spectrogram = null)
         {
             List<Flux> fluxes = null;
+            
             if (spectrogram == null)
             {
                 if (m_Spectrogram != null)
@@ -80,7 +85,9 @@ namespace Ori.AudioAnalyzer.Core
                 fluxes = m_FluxCreator.CreateFlux(spectrogram);
             }
             
-            return fluxes;
+            m_FluxManager.SetFluxes(fluxes);
+            
+            return m_FluxManager.FluxData;
         }
         
         private void NormalizeSignal(Signal signal)

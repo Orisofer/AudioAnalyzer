@@ -118,6 +118,20 @@ namespace Ori.AudioAnalyzer.Editor.View
             m_AnalyzeAudioButton.clicked += OnAnalyzeAudioClicked;
             m_CreateFluxButton.clicked += OnCreateFluxButtonClicked;
             m_FluxView.FluxParametersUpdated += OnFluxParametersUpdated;
+            m_FluxView.NavButtonClicked += OnFluxNavButtonClicked;
+        }
+
+        private void OnFluxNavButtonClicked(int dir)
+        {
+            int currentFluxIndex = m_FluxView.CurrentFluxIndex;
+            int numFluxes = m_Orchestrator.FluxManager.FluxData.Count;
+            
+            int nextIndex = (currentFluxIndex + dir + numFluxes) % numFluxes;
+            
+            Flux toDisplay = m_Orchestrator.FluxManager.FluxData[nextIndex];
+            
+            m_FluxView.UpdateData(toDisplay);
+            m_FluxView.CurrentFluxIndex = nextIndex;
         }
 
         private void CreateOrchestrator()
@@ -131,7 +145,7 @@ namespace Ori.AudioAnalyzer.Editor.View
             {
                 List<Flux> fluxes = m_Orchestrator.CreateFlux();
                 
-                m_FluxView.UpdateData(fluxes);
+                m_FluxView.UpdateData(fluxes[0]);
                 
                 ChangeState(AudioAnalyzerWindowState.FLUX_CREATED);
             }

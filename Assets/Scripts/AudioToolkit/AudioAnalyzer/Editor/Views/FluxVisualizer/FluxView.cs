@@ -20,8 +20,13 @@ namespace Ori.AudioAnalyzer.Editor.View
         private const string CLASS_NAME_SLIDER_NOISE_FLOOR = "noise-floor";
         private const string CLASS_NAME_SLIDER_WINDOW_SIZE = "window-size";
         private const string CLASS_NAME_SLIDER_LABEL = "slider-value-label";
+        private const string CLASS_NAME_BUTTON_NAV = "button-nav";
+        private const string BUTTON_NAV_NEXT = "Next";
+        private const string BUTTON_NAV_PREVIOUS = "Previous";
+        private const string CLASS_NAME_NAV_LABEL = "nav-label";
         
         // --- Data ---
+        private Flux m_Flux;
         private List<int> m_Onsets;
         private float[] m_FluxData;
         private float[] m_AverageThresholds;
@@ -44,6 +49,7 @@ namespace Ori.AudioAnalyzer.Editor.View
         // --- UI Elements ---
         private VisualElement m_GraphArea;
         private VisualElement m_ControlArea;
+        private VisualElement m_NavigationArea;
         
         // Legend
         private VisualElement m_LegendContainer;
@@ -61,10 +67,19 @@ namespace Ori.AudioAnalyzer.Editor.View
         private Slider m_NoiseFloorSlider;
         private Slider m_WindowSizeSlider;
         
+        // Buttons
+        private Button m_ButtonNext;
+        private Button m_ButtonPrevious;
+        
+        // Labels
+        private Label m_FluxName;
+        
         // Current Parameters State
         private FluxCreatorParameters m_CurrentParameters;
 
-        public event Action<FluxCreatorParameters, bool> FluxParametersUpdated;
+        internal event Action<FluxCreatorParameters, bool> FluxParametersUpdated;
+        internal event Action<int> NavButtonClicked;
+        internal int CurrentFluxIndex { get; set; }
 
         public FluxView()
         {
@@ -78,6 +93,7 @@ namespace Ori.AudioAnalyzer.Editor.View
 
             SetupGraphArea();
             SetupControlsArea();
+            SetupNavigationArea();
         }
 
         private void SetupGraphArea()
@@ -102,6 +118,39 @@ namespace Ori.AudioAnalyzer.Editor.View
             CreateSliders();
             
             Add(m_ControlArea);
+        }
+
+        private void SetupNavigationArea()
+        {
+            m_NavigationArea = new VisualElement();
+            
+            m_NavigationArea.AddToClassList("flux-view-area-navigation");
+
+            m_ButtonNext = CreateNavButton(BUTTON_NAV_NEXT);
+            m_ButtonPrevious = CreateNavButton(BUTTON_NAV_PREVIOUS);
+
+            m_ButtonNext.clicked += OnButtonNext;
+            m_ButtonPrevious.clicked += OnButtonPrev;
+            
+            m_FluxName = new Label();
+            
+            m_FluxName.AddToClassList(CLASS_NAME_NAV_LABEL);
+            
+            m_NavigationArea.Add(m_ButtonPrevious);
+            m_NavigationArea.Add(m_FluxName);
+            m_NavigationArea.Add(m_ButtonNext);
+            
+            Add(m_NavigationArea);
+        }
+
+        private Button CreateNavButton(string buttonText)
+        {
+            Button navButton = new Button();
+            navButton.text = buttonText;
+            
+            navButton.AddToClassList(CLASS_NAME_BUTTON_NAV);
+            
+            return navButton;
         }
 
         private void CreateSliders()
@@ -233,19 +282,23 @@ namespace Ori.AudioAnalyzer.Editor.View
             FluxParametersUpdated?.Invoke(m_CurrentParameters, true);
         }
 
-        public void UpdateData(List<Flux> fluxes)
+        public void UpdateData(Flux flux)
         {
             EnsureColorsCachedFromUss();
+
+            if (flux == null)
+            {
+                return;
+            }
             
-            if (fluxes == null || fluxes.Count == 0) return;
+            m_Flux = flux;
+            m_Onsets = flux.Onsets;
+            m_FluxData = flux.FluxData;
+            m_AverageThresholds = flux.AverageThresholds;
+            m_NoiseFloor = flux.NoiseFloor;
+            m_HopSize = flux.HopSize;
             
-            Flux data = fluxes[2];
-            
-            m_FluxData = data.FluxData;
-            m_AverageThresholds =  data.AverageThresholds;
-            m_NoiseFloor = data.NoiseFloor;
-            m_HopSize = data.HopSize;
-            m_Onsets = data.Onsets;
+            m_FluxName.text = flux.Id;
             
             m_GraphArea.MarkDirtyRepaint();
         }
@@ -348,10 +401,23 @@ namespace Ori.AudioAnalyzer.Editor.View
             
             painter.Stroke();
         }
+        
+        private void OnButtonPrev()
+        {
+            NavButtonClicked?.Invoke(-1);
+        }
+
+        private void OnButtonNext()
+        {
+            NavButtonClicked?.Invoke(1);
+        }
 
         public void Unbind()
         {
             m_GraphArea.generateVisualContent -= OnGenerateVisualContent;
+            
+            m_ButtonNext.clicked -= OnButtonNext;
+            m_ButtonPrevious.clicked -= OnButtonPrev;
         }
     }
 }

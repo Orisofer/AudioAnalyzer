@@ -175,3 +175,9 @@
 .flux-view-legend-item-dot-noise-floor {
     background-color: #ec7600;
 }
+
+.flux-view-area-navigation {
+    justify-content: center;
+    flex-direction: row;
+    padding-bottom: 14px;
+}
