@@ -136,7 +136,7 @@ namespace Ori.AudioAnalyzer.Editor.View
             FluxResult toDisplay = m_FluxResults[nextIndex];
             
             m_FluxView.UpdateData(toDisplay);
-            m_FluxView.CurrentFluxIndex = nextIndex;
+            CurrentFluxIndex = nextIndex;
         }
 
         private void CreateOrchestrator()
