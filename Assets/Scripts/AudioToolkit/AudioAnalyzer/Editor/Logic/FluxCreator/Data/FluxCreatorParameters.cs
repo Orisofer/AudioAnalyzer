@@ -1,8 +1,6 @@
-using UnityEngine;
-
 namespace Ori.AudioAnalyzer.Core
 {
-    public struct FluxCreatorParameters
+    public class FluxCreatorParameters
     {
         public float ThresholdSensitivityMultiplier;
         public float NoiseFloorMultiplier;

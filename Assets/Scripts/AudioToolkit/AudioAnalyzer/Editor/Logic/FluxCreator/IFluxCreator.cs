@@ -4,9 +4,9 @@ namespace Ori.AudioAnalyzer.Core
 {
     public interface IFluxCreator
     {
-        public List<Flux> CreateFlux(Spectrogram spectrogram);
-        
-        public void SetParameters(FluxCreatorParameters parameters);
+        public FluxResult CreateFlux(string fluxID, Spectrogram spectrogram);
+
+        public FluxResult UpdateFlux(FluxResult source);
     }
 }
 

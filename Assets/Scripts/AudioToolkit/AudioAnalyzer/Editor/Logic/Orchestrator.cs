@@ -6,21 +6,33 @@ namespace Ori.AudioAnalyzer.Core
 {
     internal class Orchestrator
     {
+        private const string KICK_FLUX_ID = "Kick";
+        private const string SNARE_FLUX_ID = "Snare";
+        private const string HIHAT_FLUX_ID = "Hihat";
+        
+        private const int KICK_FREQUENCY_MIN = 40;
+        private const int KICK_FREQUENCY_MAX = 150;
+        
+        private const int SNARE_FREQUENCY_MIN = 150;
+        private const int SNARE_FREQUENCY_MAX = 2000;
+        
+        private const int HIHAT_FREQUENCY_MIN = 2000;
+        private const int HIHAT_FREQUENCY_MAX = 15000;
+        
         private readonly IAudioAnalyzer m_AudioAnalyzer;
         private readonly IFluxCreator m_FluxCreator;
         
         private Spectrogram m_Spectrogram;
-        private FluxManager m_FluxManager;
+        private Dictionary<string, FluxResult> m_Fluxes;
         private Signal m_Signal;
         private string m_AudioPath;
         
-        public FluxManager FluxManager => m_FluxManager;
+        public Dictionary<string, FluxResult> Fluxes => m_Fluxes;
         
         internal Orchestrator()
         {
             m_AudioAnalyzer = new AudioAnalyzer();
-            m_FluxCreator = new MultibandFluxCreator();
-            m_FluxManager =  new FluxManager();
+            m_Fluxes = new Dictionary<string, FluxResult>();
         }
 
         internal Signal ParseAudio(string audioPath = null, bool normalized = true)
@@ -69,25 +81,39 @@ namespace Ori.AudioAnalyzer.Core
             return m_Spectrogram;
         }
 
-        internal List<Flux> CreateFlux(Spectrogram spectrogram = null)
+        internal Dictionary<string, FluxResult> CreateFluxes(Spectrogram spectrogram = null)
         {
-            List<Flux> fluxes = null;
+            m_Fluxes.Clear();
+            
+            IFluxCreator fluxCreatorBass = new WindowedFluxCreator(KICK_FREQUENCY_MIN, KICK_FREQUENCY_MAX);
+            IFluxCreator fluxCreatorSnare = new WindowedFluxCreator(SNARE_FREQUENCY_MIN , SNARE_FREQUENCY_MAX);
+            IFluxCreator fluxCreatorHihat = new WindowedFluxCreator(HIHAT_FREQUENCY_MIN, HIHAT_FREQUENCY_MAX);
+
+            FluxResult fluxBass = new FluxResult();
+            FluxResult fluxSnare = new FluxResult();
+            FluxResult fluxHihat = new FluxResult();
             
             if (spectrogram == null)
             {
                 if (m_Spectrogram != null)
                 {
-                   fluxes = m_FluxCreator.CreateFlux(m_Spectrogram);
+                    fluxBass = fluxCreatorBass.CreateFlux(KICK_FLUX_ID, m_Spectrogram);
+                    fluxSnare = fluxCreatorSnare.CreateFlux(SNARE_FLUX_ID, m_Spectrogram);
+                    fluxHihat = fluxCreatorHihat.CreateFlux(HIHAT_FLUX_ID, m_Spectrogram);
                 }
             }
             else
             {
-                fluxes = m_FluxCreator.CreateFlux(spectrogram);
+                fluxBass = fluxCreatorBass.CreateFlux(KICK_FLUX_ID, spectrogram);
+                fluxSnare = fluxCreatorSnare.CreateFlux(SNARE_FLUX_ID, spectrogram);
+                fluxHihat = fluxCreatorHihat.CreateFlux(HIHAT_FLUX_ID, spectrogram);
             }
             
-            m_FluxManager.SetFluxes(fluxes);
-            
-            return m_FluxManager.FluxData;
+            m_Fluxes.Add(fluxBass.ID, fluxBass);
+            m_Fluxes.Add(fluxSnare.ID, fluxSnare);
+            m_Fluxes.Add(fluxHihat.ID, fluxHihat);
+
+            return m_Fluxes;
         }
         
         private void NormalizeSignal(Signal signal)
@@ -100,9 +126,26 @@ namespace Ori.AudioAnalyzer.Core
             m_AudioPath = audioPath;
         }
 
-        internal void UpdateFluxParameters(FluxCreatorParameters parameters)
+        internal void UpdateFluxParameters(string fluxKey, FluxCreatorParameters parameters)
         {
-            m_FluxCreator.SetParameters(parameters);
+            if (m_Fluxes.TryGetValue(fluxKey, out FluxResult fluxResult))
+            {
+                fluxResult.FluxCreatorParameters = parameters;
+            }
+        }
+        
+        internal FluxResult UpdateFlux(string fluxKey)
+        {
+            if (m_Fluxes.TryGetValue(fluxKey, out FluxResult fluxResult))
+            {
+                fluxResult = m_FluxCreator.UpdateFlux(fluxResult);
+                
+                return fluxResult;
+            }
+            
+            Debug.LogError("Could not find flux for " + fluxKey);
+
+            return null;
         }
 
         internal void Reset()

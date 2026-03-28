@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Ori.AudioAnalyzer.Core;
 using UnityEditor;
 using UnityEngine;
@@ -18,6 +19,7 @@ namespace Ori.AudioAnalyzer.Editor.View
         private Orchestrator m_Orchestrator;
         private WaveformView m_WaveformView;
         private FluxView m_FluxView;
+        private List<FluxResult> m_FluxResults;
 
         private VisualTreeAsset m_VisualTree;
         private StyleSheet m_StyleSheet;
@@ -37,6 +39,7 @@ namespace Ori.AudioAnalyzer.Editor.View
         private AudioAnalyzerWindowState m_State;
         
         private string m_AudioPath;
+        private int CurrentFluxIndex;
     
         [MenuItem("Tools/AudioAnalyzer/AudioAnalyzerWindow")]
         public static void ShowWindow()
@@ -109,6 +112,9 @@ namespace Ori.AudioAnalyzer.Editor.View
             m_FluxView.AddToClassList("flux-view");
             
             m_FluxViewSection.Add(m_FluxView);
+
+            m_FluxResults = new List<FluxResult>();
+            CurrentFluxIndex = 0;
         }
         
         private void AddListeners()
@@ -123,12 +129,11 @@ namespace Ori.AudioAnalyzer.Editor.View
 
         private void OnFluxNavButtonClicked(int dir)
         {
-            int currentFluxIndex = m_FluxView.CurrentFluxIndex;
-            int numFluxes = m_Orchestrator.FluxManager.FluxData.Count;
+            int numFluxes = m_FluxResults.Count;
             
-            int nextIndex = (currentFluxIndex + dir + numFluxes) % numFluxes;
+            int nextIndex = (CurrentFluxIndex + dir + numFluxes) % numFluxes;
             
-            Flux toDisplay = m_Orchestrator.FluxManager.FluxData[nextIndex];
+            FluxResult toDisplay = m_FluxResults[nextIndex];
             
             m_FluxView.UpdateData(toDisplay);
             m_FluxView.CurrentFluxIndex = nextIndex;
@@ -143,9 +148,16 @@ namespace Ori.AudioAnalyzer.Editor.View
         {
             try
             {
-                List<Flux> fluxes = m_Orchestrator.CreateFlux();
+                Dictionary<string, FluxResult> fluxesDic = m_Orchestrator.CreateFluxes();
                 
-                m_FluxView.UpdateData(fluxes[0]);
+                m_FluxResults.Clear();
+
+                foreach (KeyValuePair<string, FluxResult> kvp in fluxesDic)
+                {
+                    m_FluxResults.Add(kvp.Value);
+                }
+                
+                m_FluxView.UpdateData(m_FluxResults[CurrentFluxIndex]);
                 
                 ChangeState(AudioAnalyzerWindowState.FLUX_CREATED);
             }
@@ -155,13 +167,15 @@ namespace Ori.AudioAnalyzer.Editor.View
             }
         }
         
-        private void OnFluxParametersUpdated(FluxCreatorParameters newParameters, bool recalculate)
+        private void OnFluxParametersUpdated(string fluxKey, FluxCreatorParameters newParameters, bool recalculate)
         {
-            m_Orchestrator.UpdateFluxParameters(newParameters);
+            m_Orchestrator.UpdateFluxParameters(fluxKey, newParameters);
 
             if (recalculate)
             {
-                OnCreateFluxButtonClicked();
+                FluxResult result = m_Orchestrator.UpdateFlux(fluxKey);
+                
+                m_FluxView.UpdateData(result);
             }
         }
 

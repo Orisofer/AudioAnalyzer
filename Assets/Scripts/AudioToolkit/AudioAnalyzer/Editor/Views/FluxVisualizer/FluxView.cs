@@ -26,7 +26,7 @@ namespace Ori.AudioAnalyzer.Editor.View
         private const string CLASS_NAME_NAV_LABEL = "nav-label";
         
         // --- Data ---
-        private Flux m_Flux;
+        private FluxResult m_Flux;
         private List<int> m_Onsets;
         private float[] m_FluxData;
         private float[] m_AverageThresholds;
@@ -77,7 +77,7 @@ namespace Ori.AudioAnalyzer.Editor.View
         // Current Parameters State
         private FluxCreatorParameters m_CurrentParameters;
 
-        internal event Action<FluxCreatorParameters, bool> FluxParametersUpdated;
+        internal event Action<string, FluxCreatorParameters, bool> FluxParametersUpdated;
         internal event Action<int> NavButtonClicked;
         internal int CurrentFluxIndex { get; set; }
 
@@ -274,31 +274,31 @@ namespace Ori.AudioAnalyzer.Editor.View
 
         private void NotifyParametersUpdated()
         {
-            FluxParametersUpdated?.Invoke(m_CurrentParameters, false);
+            FluxParametersUpdated?.Invoke(m_Flux.ID, m_CurrentParameters, false);
         }
         
         private void NotifyParametersUpdatedAndRecalculate()
         {
-            FluxParametersUpdated?.Invoke(m_CurrentParameters, true);
+            FluxParametersUpdated?.Invoke(m_Flux.ID, m_CurrentParameters, true);
         }
 
-        public void UpdateData(Flux flux)
+        public void UpdateData(FluxResult fluxResult)
         {
             EnsureColorsCachedFromUss();
 
-            if (flux == null)
+            if (fluxResult == null || fluxResult.Flux == null)
             {
                 return;
             }
             
-            m_Flux = flux;
-            m_Onsets = flux.Onsets;
-            m_FluxData = flux.FluxData;
-            m_AverageThresholds = flux.AverageThresholds;
-            m_NoiseFloor = flux.NoiseFloor;
-            m_HopSize = flux.HopSize;
+            m_Flux = fluxResult;
+            m_Onsets = fluxResult.Flux.Onsets;
+            m_FluxData = fluxResult.Flux.FluxData;
+            m_AverageThresholds = fluxResult.Flux.AverageThresholds;
+            m_NoiseFloor = fluxResult.Flux.NoiseFloor;
+            m_HopSize = fluxResult.Flux.HopSize;
             
-            m_FluxName.text = flux.Id;
+            m_FluxName.text = fluxResult.ID;
             
             m_GraphArea.MarkDirtyRepaint();
         }
