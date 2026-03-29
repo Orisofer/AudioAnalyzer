@@ -20,7 +20,6 @@ namespace Ori.AudioAnalyzer.Core
         private const int HIHAT_FREQUENCY_MAX = 15000;
         
         private readonly IAudioAnalyzer m_AudioAnalyzer;
-        private readonly IFluxCreator m_FluxCreator;
         
         private Spectrogram m_Spectrogram;
         private Dictionary<string, FluxResult> m_Fluxes;
@@ -138,7 +137,12 @@ namespace Ori.AudioAnalyzer.Core
         {
             if (m_Fluxes.TryGetValue(fluxKey, out FluxResult fluxResult))
             {
-                fluxResult = m_FluxCreator.UpdateFlux(fluxResult);
+                int minFreq = fluxResult.FrequencyWindowMin;
+                int maxFreq = fluxResult.FrequencyWindowMax;
+                
+                IFluxCreator fluxCreator = new WindowedFluxCreator(minFreq,  maxFreq);
+                
+                fluxCreator.UpdateFlux(m_Spectrogram, fluxResult);
                 
                 return fluxResult;
             }

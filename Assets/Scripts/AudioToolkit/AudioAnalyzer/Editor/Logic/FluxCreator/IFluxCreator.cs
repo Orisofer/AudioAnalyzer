@@ -6,7 +6,7 @@ namespace Ori.AudioAnalyzer.Core
     {
         public FluxResult CreateFlux(string fluxID, Spectrogram spectrogram);
 
-        public FluxResult UpdateFlux(FluxResult source);
+        public FluxResult UpdateFlux(Spectrogram spectrogram, FluxResult source);
     }
 }
 

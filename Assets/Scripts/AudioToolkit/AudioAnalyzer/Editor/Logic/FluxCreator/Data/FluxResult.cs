@@ -5,6 +5,8 @@ namespace Ori.AudioAnalyzer.Core
         internal Flux Flux;
         internal FluxCreatorParameters FluxCreatorParameters;
         internal string ID;
+        internal int FrequencyWindowMin;
+        internal int FrequencyWindowMax;
     }
 }
 

@@ -8,9 +8,6 @@ namespace Ori.AudioAnalyzer.Core
     {
         private readonly int m_MinFrequency;
         private readonly int m_MaxFrequency;
-        
-        private Spectrogram m_CachedSpectrogram;
-        
         // flux data
         private List<int> m_Onsets;
         private float[] m_FluxData;
@@ -33,22 +30,22 @@ namespace Ori.AudioAnalyzer.Core
 
             Reset();
             
-            m_CachedSpectrogram  = spectrogram;
-            
             FluxResult result = new FluxResult();
             
             result.ID = fluxID;
+            result.FrequencyWindowMin = m_MinFrequency;
+            result.FrequencyWindowMax = m_MaxFrequency;
             result.FluxCreatorParameters = CreateParameters();
             
-            return UpdateFlux(result);
+            return UpdateFlux(spectrogram, result);
         }
 
-        public FluxResult UpdateFlux(FluxResult sourceFlux)
+        public FluxResult UpdateFlux(Spectrogram spectrogram, FluxResult sourceFlux)
         {
             // 1. separate bins into instruments
             FluxCreatorParameters parameters = sourceFlux.FluxCreatorParameters;
-            Spectrum[] spectra = m_CachedSpectrogram.Spectra;
-            float sampleRate = m_CachedSpectrogram.SampleRate;
+            Spectrum[] spectra = spectrogram.Spectra;
+            float sampleRate = spectrogram.SampleRate;
             int spectraLength = spectra.Length;
             int binsLength = spectra[0].Bins.Length;
             int fftSize = binsLength * 2;
@@ -60,8 +57,8 @@ namespace Ori.AudioAnalyzer.Core
             
             for (int i = 1; i < spectraLength; i++)
             {
-                Spectrum prev =  m_CachedSpectrogram.Spectra[i - 1];
-                Spectrum curr = m_CachedSpectrogram.Spectra[i];
+                Spectrum prev =  spectrogram.Spectra[i - 1];
+                Spectrum curr = spectrogram.Spectra[i];
                 
                 // evaluate kick region
                 m_FluxData[i] = EvaluateRegionFlux(binsStartIndex, binsEndIndex, prev, curr);
@@ -78,7 +75,7 @@ namespace Ori.AudioAnalyzer.Core
             m_Onsets = CreateOnsets(ref m_FluxData, ref averageThresholds, spectraLength, noiseFloor,
                 excludeWindowInAverage, spectra, parameters);
             
-            Flux flux = new Flux(m_FluxData,  averageThresholds, m_Onsets, noiseFloor, m_CachedSpectrogram.HopSize);
+            Flux flux = new Flux(m_FluxData,  averageThresholds, m_Onsets, noiseFloor, spectrogram.HopSize);
             
             sourceFlux.Flux = flux;
 

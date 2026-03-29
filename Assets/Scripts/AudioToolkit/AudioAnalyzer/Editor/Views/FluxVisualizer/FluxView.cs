@@ -22,7 +22,7 @@ namespace Ori.AudioAnalyzer.Editor.View
         private const string CLASS_NAME_SLIDER_LABEL = "slider-value-label";
         private const string CLASS_NAME_BUTTON_NAV = "button-nav";
         private const string BUTTON_NAV_NEXT = "Next";
-        private const string BUTTON_NAV_PREVIOUS = "Previous";
+        private const string BUTTON_NAV_PREVIOUS = "Prev";
         private const string CLASS_NAME_NAV_LABEL = "nav-label";
         
         // --- Data ---
@@ -299,6 +299,12 @@ namespace Ori.AudioAnalyzer.Editor.View
             m_HopSize = fluxResult.Flux.HopSize;
             
             m_FluxName.text = fluxResult.ID;
+
+            m_CurrentParameters = fluxResult.FluxCreatorParameters;
+
+            m_ThresholdSlider.value = m_CurrentParameters.ThresholdSensitivityMultiplier;
+            m_WindowSizeSlider.value = m_CurrentParameters.FluxTimelineWindowSize;
+            m_NoiseFloorSlider.value = m_CurrentParameters.NoiseFloorMultiplier;
             
             m_GraphArea.MarkDirtyRepaint();
         }
